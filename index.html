@@ -803,7 +803,8 @@ async function openCalModal() {
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      events = await res.json();
+      const data = await res.json();
+      events = data.events || [];
       loaded = true;
       break;
     } catch(_) { /* try next */ }
@@ -814,7 +815,7 @@ async function openCalModal() {
   }
 
   // Upcoming only
-  events = (Array.isArray(events) ? events : Object.values(events)).filter(ev => {
+  events = events.filter(ev => {
     if (!ev.date) return false;
     return new Date(ev.date) >= today;
   });
