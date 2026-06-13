@@ -198,9 +198,128 @@ input[type=date],input[type=time]{color-scheme:dark}
 ::-webkit-scrollbar-track{background:#080808}
 ::-webkit-scrollbar-thumb{background:#202020;border-radius:4px}
 ::-webkit-scrollbar-thumb:hover{background:#2c2c2c}
+
+/* ── PASSWORD GATE ── */
+#pwGate{
+  position:fixed;inset:0;z-index:9999;
+  background:#030303;
+  display:flex;align-items:center;justify-content:center;
+}
+#pwGate.hidden{display:none}
+.pw-box{
+  background:#090909;border:1px solid #1e1e1e;border-radius:14px;
+  padding:36px 40px;width:320px;text-align:center;
+}
+.pw-logo{font-size:1.4rem;font-weight:900;color:#fff;letter-spacing:-.5px;margin-bottom:4px}
+.pw-logo em{font-style:normal;color:#888}
+.pw-sub{font-size:.65rem;color:#333;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:28px}
+.pw-label{font-size:.62rem;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:.7px;display:block;text-align:left;margin-bottom:6px}
+#pwInput{
+  width:100%;background:#0c0c0c;border:1px solid #252525;border-radius:8px;
+  color:#ccc;padding:11px 14px;font-size:.9rem;font-family:inherit;font-weight:500;
+  outline:none;margin-bottom:14px;text-align:center;letter-spacing:2px;
+  transition:border-color .2s,box-shadow .2s;
+}
+#pwInput:focus{border-color:#555;box-shadow:0 0 0 3px rgba(255,255,255,.05)}
+#pwInput.shake{animation:shake .38s ease}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-9px)}
+  40%{transform:translateX(9px)}
+  60%{transform:translateX(-6px)}
+  80%{transform:translateX(6px)}
+}
+.pw-btn{
+  width:100%;padding:12px;background:#1a1a1a;border:1px solid #2a2a2a;
+  border-radius:8px;color:#ccc;font-family:inherit;font-size:.82rem;
+  font-weight:700;letter-spacing:.3px;cursor:pointer;transition:all .2s;
+}
+.pw-btn:hover{background:#222;border-color:#363636;color:#fff}
+.pw-err{font-size:.72rem;color:#e05555;margin-top:10px;min-height:18px}
+
+/* ── SAVE / PUBLISH BUTTONS ── */
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.save-btn,.pub-btn{
+  padding:13px 16px;
+  font-size:.82rem;font-weight:800;letter-spacing:.4px;text-transform:uppercase;
+  font-family:inherit;border:none;border-radius:9px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .22s;
+}
+.save-btn{
+  background:#111;border:1px solid #252525;color:#666;
+  box-shadow:0 2px 8px rgba(0,0,0,.4);
+}
+.save-btn:hover:not(:disabled){background:#161616;border-color:#383838;color:#aaa}
+.save-btn:disabled{opacity:.3;cursor:not-allowed}
+.save-btn.done{background:#0d1a2e;border-color:#1a3a5e;color:#5b9bd5;cursor:default}
+.pub-btn{
+  background:var(--accent);color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 2px 10px rgba(0,0,0,.5);
+}
+.pub-btn:hover:not(:disabled){
+  filter:brightness(1.18);transform:translateY(-1px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 24px rgba(var(--ar),var(--ag),var(--ab),.42);
+}
+.pub-btn:active:not(:disabled){transform:translateY(0);filter:brightness(1.05)}
+.pub-btn:disabled{opacity:.32;cursor:not-allowed;transform:none;filter:none;box-shadow:0 2px 10px rgba(0,0,0,.5)}
+.pub-btn.done{background:#0f2e0f;color:#4caf50;cursor:default;box-shadow:none;transform:none;filter:none}
+
+/* ── HISTORY PANEL ── */
+.history-wrap{max-width:1280px;margin:0 auto;padding:0 28px 48px}
+.history-header{
+  display:flex;align-items:center;gap:12px;
+  padding:18px 0 14px;
+  border-top:1px solid #141414;
+}
+.history-title{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#303030}
+.history-count{
+  font-size:.62rem;font-weight:700;color:#2a2a2a;
+  background:#0f0f0f;border:1px solid #1a1a1a;border-radius:10px;padding:2px 8px;
+}
+.history-empty{color:#282828;font-size:.82rem;font-style:italic;padding:20px 0}
+.history-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.h-card{
+  background:#090909;border:1px solid #181818;border-radius:10px;padding:16px;
+  transition:border-color .2s;
+}
+.h-card:hover{border-color:#252525}
+.h-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+.h-card-info{flex:1;min-width:0}
+.h-venue{font-size:.65rem;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.h-event{font-size:.88rem;font-weight:700;color:#ccc;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-date{font-size:.7rem;color:#3a3a3a;margin-top:3px}
+.h-badge{
+  font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.6px;
+  padding:3px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0;
+}
+.h-badge.saved{background:#141414;color:#484848;border:1px solid #1e1e1e}
+.h-badge.published{background:#0a200a;color:#4caf50;border:1px solid #143514}
+.h-meta{font-size:.67rem;color:#2e2e2e;margin-bottom:12px}
+.h-actions{display:flex;gap:7px}
+.h-btn{
+  flex:1;padding:7px 10px;font-size:.68rem;font-weight:700;letter-spacing:.2px;
+  font-family:inherit;border-radius:6px;cursor:pointer;transition:all .18s;
+  border:1px solid #1e1e1e;background:#0d0d0d;color:#484848;
+}
+.h-btn:hover{background:#131313;border-color:#2e2e2e;color:#aaa}
+.h-btn:disabled{opacity:.4;cursor:not-allowed}
+.h-del:hover{background:#1a0a0a !important;border-color:#3a1a1a !important;color:#e05555 !important}
+.h-pub:hover{border-color:var(--accent) !important;color:var(--accent) !important}
 </style>
 </head>
 <body>
+
+<div id="pwGate">
+  <div class="pw-box">
+    <div class="pw-logo">Event <em>Machine</em></div>
+    <div class="pw-sub">GentsClubs.com &nbsp;·&nbsp; Pattaya</div>
+    <label class="pw-label" for="pwInput">Password</label>
+    <input type="password" id="pwInput" placeholder="••••••••" autocomplete="current-password">
+    <button class="pw-btn" onclick="checkPw()">Enter</button>
+    <div class="pw-err" id="pwErr"></div>
+  </div>
+</div>
 
 <header>
   <div>
@@ -280,16 +399,28 @@ input[type=date],input[type=time]{color-scheme:dark}
 
     <div class="post-wrap">
       <div class="post-divider"></div>
-      <button class="post-btn" id="postBtn" onclick="post()" disabled>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
-        </svg>
-        <span id="postLabel">Post to Discord</span>
-      </button>
+      <div class="btn-row">
+        <button class="save-btn" id="saveBtn" onclick="saveForLater()" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+          <span id="saveLabel">Save for Later</span>
+        </button>
+        <button class="pub-btn" id="publishBtn" onclick="publishNow()" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+          <span id="publishLabel">Publish Now</span>
+        </button>
+      </div>
       <div id="postStatus"></div>
     </div>
   </div>
 
+</div>
+
+<div class="history-wrap">
+  <div class="history-header">
+    <div class="history-title">Event History</div>
+    <div class="history-count" id="historyCount">0 events</div>
+  </div>
+  <div id="historyList"><div class="history-empty">No saved events yet.</div></div>
 </div>
 
 <script>
@@ -312,6 +443,12 @@ let posted = false;
 
 // ── INIT ──────────────────────────────────────────────────────
 function init() {
+  if (sessionStorage.getItem('em_auth')) {
+    document.getElementById('pwGate').classList.add('hidden');
+  } else {
+    document.getElementById('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkPw(); });
+  }
+
   const sel = document.getElementById('venueSelect');
   VENUES.forEach((v, i) => {
     const o = document.createElement('option');
@@ -325,6 +462,7 @@ function init() {
   document.getElementById('posterUrl').addEventListener('input', () => { fixDropbox(); onChange(); });
   document.getElementById('venueSelect').addEventListener('change', onVenue);
   initMic();
+  renderHistory();
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
@@ -389,15 +527,19 @@ function onVenue() {
   }
   posted = false;
   document.getElementById('postStatus').innerHTML = '';
-  document.getElementById('postLabel').textContent = 'Post to Discord';
-  document.getElementById('postBtn').classList.remove('done');
+  document.getElementById('saveLabel').textContent = 'Save for Later';
+  document.getElementById('publishLabel').textContent = 'Publish Now';
+  document.getElementById('saveBtn').classList.remove('done');
+  document.getElementById('publishBtn').classList.remove('done');
   onChange();
 }
 
 function onChange() {
   const d = getForm();
   renderPreview(d);
-  document.getElementById('postBtn').disabled = !(d.venue && d.eventName && d.date && !posted);
+  const ready = !!(d.venue && d.eventName && d.date) && !posted;
+  document.getElementById('saveBtn').disabled    = !ready;
+  document.getElementById('publishBtn').disabled = !ready;
 }
 
 // ── DISCORD PREVIEW ───────────────────────────────────────────
@@ -454,16 +596,67 @@ function renderPreview(d) {
   body.innerHTML = h;
 }
 
-// ── POST ──────────────────────────────────────────────────────
-async function post() {
+// ── SAVE / PUBLISH ────────────────────────────────────────────
+function saveForLater() {
   const d = getForm();
   if (!d.venue || !d.eventName) return;
+  const entry = makeEntry(d, 'saved');
+  persistEntry(entry);
+  posted = true;
+  document.getElementById('saveLabel').textContent = 'Saved';
+  document.getElementById('saveBtn').classList.add('done');
+  document.getElementById('saveBtn').disabled    = true;
+  document.getElementById('publishBtn').disabled = true;
+  renderHistory();
+}
 
-  const btn = document.getElementById('postBtn');
-  const lbl = document.getElementById('postLabel');
-  const sta = document.getElementById('postStatus');
-  btn.disabled = true; lbl.textContent = 'Posting…'; sta.innerHTML = '';
+async function publishNow(histId) {
+  const fromHistory = histId !== undefined;
+  let d, entry;
+  if (fromHistory) {
+    entry = getHistory().find(e => e.id === histId);
+    if (!entry) return;
+    d = entryToForm(entry);
+  } else {
+    d = getForm();
+    if (!d.venue || !d.eventName) return;
+    entry = makeEntry(d, 'published');
+  }
 
+  const pubBtn = fromHistory
+    ? document.querySelector(`[data-pub="${histId}"]`)
+    : document.getElementById('publishBtn');
+  const pubLbl = fromHistory ? null : document.getElementById('publishLabel');
+
+  if (!fromHistory) {
+    document.getElementById('saveBtn').disabled    = true;
+    document.getElementById('publishBtn').disabled = true;
+    document.getElementById('postStatus').innerHTML = '';
+  }
+  if (pubBtn) { pubBtn.disabled = true; if (!pubLbl) pubBtn.textContent = 'Posting…'; }
+  if (pubLbl) pubLbl.textContent = 'Posting…';
+
+  const ok = await doPost(d, fromHistory ? null : document.getElementById('postStatus'));
+
+  if (ok) {
+    entry.status     = 'published';
+    entry.postCount  = (entry.postCount || 0) + 1;
+    entry.lastPosted = new Date().toISOString();
+    persistEntry(entry);
+    if (!fromHistory) {
+      posted = true;
+      if (pubLbl) pubLbl.textContent = 'Published';
+      if (pubBtn) pubBtn.classList.add('done');
+    }
+    renderHistory();
+  } else {
+    if (pubBtn) { pubBtn.disabled = false; if (!pubLbl) pubBtn.textContent = 'Publish Again'; }
+    if (pubLbl) pubLbl.textContent = 'Retry';
+    if (!fromHistory) document.getElementById('saveBtn').disabled = false;
+  }
+}
+
+async function doPost(d, statusEl) {
   const qr      = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(d.venue.mapsUrl)}`;
   const dateStr = d.date ? fmtDate(d.date) : 'Date TBC';
   const timeStr = (d.startTime && d.endTime) ? `${fmt12(d.startTime)} — ${fmt12(d.endTime)}` : d.venue.hours;
@@ -475,9 +668,9 @@ async function post() {
     color,
     thumbnail: {url: qr},
     fields   : [
-      {name:'Date',     value: dateStr,                      inline: true},
-      {name:'Time',     value: timeStr,                      inline: true},
-      {name:'Location', value:`${d.venue.location}, Pattaya`,inline: true},
+      {name:'Date',     value: dateStr,                       inline: true},
+      {name:'Time',     value: timeStr,                       inline: true},
+      {name:'Location', value:`${d.venue.location}, Pattaya`, inline: true},
     ],
     footer: {text:`Opening Hours: ${d.venue.hours} · GentsClubs.com Pattaya`, icon_url: d.venue.logoUrl}
   };
@@ -506,11 +699,132 @@ async function post() {
       lines.push(`<div class="status-item s-err"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>${esc(wh.label)}: ${esc(e.message)}</div>`);
     }
   }
-  sta.innerHTML = lines.join('');
-  if (allOk) {
-    posted = true; lbl.textContent = 'Posted'; btn.classList.add('done');
+  if (statusEl) statusEl.innerHTML = lines.join('');
+  return allOk;
+}
+
+// ── HISTORY ───────────────────────────────────────────────────
+const HISTORY_KEY = 'em_history';
+
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
+}
+
+function makeEntry(d, status) {
+  return {
+    id         : Date.now().toString(36) + Math.random().toString(36).slice(2),
+    venueIdx   : VENUES.indexOf(d.venue),
+    venueName  : d.venue.name,
+    eventName  : d.eventName,
+    date       : d.date,
+    startTime  : d.startTime,
+    endTime    : d.endTime,
+    description: d.description,
+    specials   : d.specials,
+    posterUrl  : d.posterUrl,
+    status,
+    postCount  : status === 'published' ? 1 : 0,
+    lastPosted : status === 'published' ? new Date().toISOString() : null,
+    savedAt    : new Date().toISOString(),
+  };
+}
+
+function entryToForm(e) {
+  return {
+    venue      : VENUES[e.venueIdx] || VENUES.find(v => v.name === e.venueName),
+    eventName  : e.eventName  || '',
+    date       : e.date       || '',
+    startTime  : e.startTime  || '',
+    endTime    : e.endTime    || '',
+    description: e.description|| '',
+    specials   : e.specials   || '',
+    posterUrl  : e.posterUrl  || '',
+  };
+}
+
+function persistEntry(entry) {
+  const all = getHistory().filter(e => e.id !== entry.id);
+  entry.savedAt = new Date().toISOString();
+  all.unshift(entry);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(all));
+}
+
+function loadFromHistory(id) {
+  const entry = getHistory().find(e => e.id === id);
+  if (!entry) return;
+  const vi = entry.venueIdx >= 0 ? entry.venueIdx : VENUES.findIndex(v => v.name === entry.venueName);
+  document.getElementById('venueSelect').value   = vi >= 0 ? vi : '';
+  onVenue();
+  document.getElementById('eventName').value     = entry.eventName   || '';
+  document.getElementById('eventDate').value     = entry.date        || '';
+  document.getElementById('startTime').value     = entry.startTime   || '';
+  document.getElementById('endTime').value       = entry.endTime     || '';
+  document.getElementById('description').value   = entry.description || '';
+  document.getElementById('specials').value      = entry.specials    || '';
+  document.getElementById('posterUrl').value     = entry.posterUrl   || '';
+  posted = false;
+  onChange();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function deleteFromHistory(id) {
+  if (!confirm('Delete this event from history?')) return;
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(getHistory().filter(e => e.id !== id)));
+  renderHistory();
+}
+
+function fmtTs(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) +
+    ' at ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+function renderHistory() {
+  const all = getHistory();
+  document.getElementById('historyCount').textContent = `${all.length} event${all.length !== 1 ? 's' : ''}`;
+  const listEl = document.getElementById('historyList');
+  if (!all.length) {
+    listEl.innerHTML = '<div class="history-empty">No saved events yet.</div>';
+    return;
+  }
+  listEl.innerHTML = `<div class="history-grid">${all.map(e => {
+    const meta = e.status === 'published'
+      ? `Posted ${e.postCount} time${e.postCount !== 1 ? 's' : ''}${e.lastPosted ? ' · Last ' + fmtTs(e.lastPosted) : ''}`
+      : `Saved ${fmtTs(e.savedAt)}`;
+    return `<div class="h-card">
+      <div class="h-card-top">
+        <div class="h-card-info">
+          <div class="h-venue">${esc(e.venueName)}</div>
+          <div class="h-event">${esc(e.eventName)}</div>
+          <div class="h-date">${esc(e.date ? fmtDate(e.date) : 'No date')}</div>
+        </div>
+        <div class="h-badge ${e.status}">${e.status === 'published' ? 'Published' : 'Saved'}</div>
+      </div>
+      <div class="h-meta">${esc(meta)}</div>
+      <div class="h-actions">
+        <button class="h-btn" onclick="loadFromHistory('${e.id}')">Load</button>
+        <button class="h-btn h-pub" data-pub="${e.id}" onclick="publishNow('${e.id}')">Publish Again</button>
+        <button class="h-btn h-del" onclick="deleteFromHistory('${e.id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ── PASSWORD GATE ─────────────────────────────────────────────
+function checkPw() {
+  const inp = document.getElementById('pwInput');
+  const err = document.getElementById('pwErr');
+  if (inp.value === 'eve308772online#\\') {
+    sessionStorage.setItem('em_auth', '1');
+    document.getElementById('pwGate').classList.add('hidden');
   } else {
-    btn.disabled = false; lbl.textContent = 'Retry';
+    err.textContent = 'Incorrect password.';
+    inp.classList.remove('shake');
+    void inp.offsetWidth;
+    inp.classList.add('shake');
+    inp.value = '';
+    inp.focus();
   }
 }
 
