@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Machine — GentsClubs.com</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--accent:#3a3a3a;--ar:58;--ag:58;--ab:58}
+
+body{
+  background:#060606;
+  color:#ccc;
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  min-height:100vh;
+  font-size:14px;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── HEADER ── */
+header{
+  padding:14px 28px;
+  background:#080808;
+  border-bottom:1px solid #141414;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+  position:relative;
+}
+header::after{
+  content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:0;transition:opacity .5s;
+}
+body.live header::after{opacity:.65}
+body.live header{
+  background:radial-gradient(ellipse at 50% 150%,rgba(var(--ar),var(--ag),var(--ab),.08) 0%,transparent 65%),#080808;
+}
+h1{font-size:1.25rem;font-weight:900;letter-spacing:-.6px;color:#fff;line-height:1}
+h1 em{font-style:normal;color:var(--accent);transition:color .35s}
+.tagline{font-size:.65rem;color:#333;margin-top:3px;text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+
+/* voice button */
+.mic-btn{
+  margin-left:auto;
+  display:flex;align-items:center;gap:7px;
+  background:#0d0d0d;border:1px solid #1e1e1e;border-radius:7px;
+  color:#484848;padding:8px 14px;cursor:pointer;
+  font-size:.75rem;font-family:inherit;font-weight:600;letter-spacing:.2px;
+  transition:all .2s;white-space:nowrap;
+}
+.mic-btn:hover{border-color:#2e2e2e;color:#888}
+.mic-btn.on{border-color:#c0392b;color:#e74c3c;background:#130808;
+  box-shadow:0 0 14px rgba(231,76,60,.18);animation:breathe 1.3s ease-in-out infinite}
+.mic-btn:disabled{opacity:.25;pointer-events:none}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* ── LAYOUT ── */
+.wrap{
+  max-width:1280px;margin:0 auto;padding:20px 28px;
+  display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;
+}
+@media(max-width:860px){.wrap{grid-template-columns:1fr;padding:16px}}
+
+/* ── CARD ── */
+.card{
+  background:#090909;border:1px solid #181818;border-radius:11px;padding:20px;
+  transition:border-color .4s,box-shadow .4s;
+}
+body.live .card{
+  border-color:rgba(var(--ar),var(--ag),var(--ab),.26);
+  box-shadow:0 0 50px rgba(var(--ar),var(--ag),var(--ab),.07),0 8px 36px rgba(0,0,0,.65);
+}
+.section-title{
+  font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;
+  color:#323232;margin-bottom:15px;transition:color .4s;
+}
+body.live .section-title{color:rgba(var(--ar),var(--ag),var(--ab),.7)}
+
+/* accent stripe on form card */
+.form-card{position:relative;overflow:hidden}
+.form-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:linear-gradient(180deg,transparent,var(--accent),transparent);
+  opacity:0;transition:opacity .5s;
+}
+body.live .form-card::before{opacity:.85}
+
+/* ── FORM ── */
+.field{margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{
+  display:block;font-size:.62rem;font-weight:700;
+  color:#323232;margin-bottom:4px;
+  text-transform:uppercase;letter-spacing:.7px;transition:color .35s;
+}
+body.live label{color:rgba(var(--ar),var(--ag),var(--ab),.55)}
+
+input,select,textarea{
+  width:100%;background:#0c0c0c;border:1px solid #202020;border-radius:7px;
+  color:#ccc;padding:8px 11px;font-size:.85rem;font-family:inherit;
+  font-weight:500;outline:none;
+  transition:border-color .2s,box-shadow .2s,background .15s;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--accent);background:#0f0f0f;
+  box-shadow:0 0 0 3px rgba(var(--ar),var(--ag),var(--ab),.16);
+}
+input::placeholder,textarea::placeholder{color:#262626}
+textarea{resize:vertical;min-height:72px;line-height:1.5}
+select option{background:#0c0c0c}
+input[type=date],input[type=time]{color-scheme:dark}
+
+#venueSelect{
+  font-weight:700;color:var(--accent);
+  border-color:rgba(var(--ar),var(--ag),var(--ab),.22);transition:all .35s;
+}
+#venueSelect option{color:#ccc}
+#venueSelect option[value=""]{color:#444}
+
+/* ── DISCORD PREVIEW ── */
+.discord-wrap{
+  background:#2b2d31;border-radius:8px;padding:14px 16px;
+}
+.d-embed{display:flex;border-radius:3px;overflow:hidden;background:#2b2d31}
+.d-bar{width:4px;flex-shrink:0;background:var(--accent);
+  box-shadow:2px 0 12px rgba(var(--ar),var(--ag),var(--ab),.4);
+  transition:background .35s,box-shadow .35s;
+}
+.d-body{padding:12px 14px 14px;flex:1;min-width:0}
+.d-author{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.d-author-img{width:22px;height:22px;border-radius:50%;object-fit:contain;background:#1e1e1e;flex-shrink:0}
+.d-author-name{font-size:.78rem;font-weight:600;color:#e0e0e0}
+.d-title{font-size:.95rem;font-weight:700;color:#fff;margin-bottom:8px;line-height:1.3}
+.d-inner{display:flex;gap:12px;align-items:flex-start}
+.d-text{flex:1;min-width:0}
+.d-desc{font-size:.8rem;color:#dbdee1;line-height:1.5;white-space:pre-wrap;margin-bottom:9px}
+.d-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px}
+.d-fw{grid-column:1/-1}
+.d-fn{font-size:.69rem;font-weight:700;color:#e0e0e0;margin-bottom:2px}
+.d-fv{font-size:.74rem;color:#dbdee1;line-height:1.4}
+.d-qr{flex-shrink:0;width:72px}
+.d-qr img{width:72px;height:72px;border-radius:3px;display:block}
+.d-footer{display:flex;align-items:center;gap:7px;margin-top:10px;
+  padding-top:8px;border-top:1px solid #35373c}
+.d-footer-img{width:17px;height:17px;border-radius:50%;object-fit:contain;flex-shrink:0}
+.d-footer-txt{font-size:.67rem;color:#87898f}
+.d-placeholder{color:#3a3a3a;font-size:.82rem;font-style:italic;padding:4px 0}
+
+/* ── POST BUTTON ── */
+.post-wrap{margin-top:14px}
+.post-divider{
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(var(--ar),var(--ag),var(--ab),.22),transparent);
+  margin-bottom:14px;
+}
+.post-btn{
+  width:100%;padding:14px 20px;
+  font-size:.88rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+  font-family:inherit;border:none;border-radius:9px;cursor:pointer;
+  background:var(--accent);color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 2px 10px rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  transition:all .22s;
+}
+.post-btn:hover:not(:disabled){
+  filter:brightness(1.18);transform:translateY(-1px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 6px 24px rgba(var(--ar),var(--ag),var(--ab),.42);
+}
+.post-btn:active:not(:disabled){transform:translateY(0);filter:brightness(1.05)}
+.post-btn:disabled{opacity:.32;cursor:not-allowed;transform:none;filter:none;
+  box-shadow:0 2px 10px rgba(0,0,0,.5)}
+.post-btn.done{background:#0f2e0f;color:#4caf50;cursor:default;
+  box-shadow:none;transform:none;filter:none}
+
+.status-item{
+  display:flex;align-items:center;gap:8px;
+  font-size:.74rem;font-weight:600;padding:6px 11px;border-radius:6px;margin-top:7px;
+}
+.s-ok{background:#0c260c;color:#4caf50;border:1px solid #174817}
+.s-err{background:#260c0c;color:#e05555;border:1px solid #481717}
+
+.label-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.label-row label{margin-bottom:0}
+.enhance-btn{
+  background:none;border:1px solid #252525;border-radius:5px;
+  color:#484848;font-size:.68rem;font-family:inherit;font-weight:600;
+  padding:3px 9px;cursor:pointer;transition:all .2s;letter-spacing:.2px;
+}
+.enhance-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.enhance-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:#080808}
+::-webkit-scrollbar-thumb{background:#202020;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#2c2c2c}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Event <em id="accentWord">Machine</em></h1>
+    <p class="tagline">GentsClubs.com &nbsp;·&nbsp; Pattaya</p>
+  </div>
+  <button class="mic-btn" id="micBtn" disabled>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1 1.93c-3.94-.49-7-3.85-7-7.93H2c0 4.42 3.07 8.07 7 8.93V20h2v-3.07c3.93-.86 7-4.51 7-8.93h-2c0 4.08-3.06 7.44-7 7.93V16h-2v-.07z"/>
+    </svg>
+    <span id="micLabel">Voice Input</span>
+  </button>
+</header>
+
+<div class="wrap">
+
+  <!-- FORM -->
+  <div class="card form-card">
+    <div class="section-title">Event Details</div>
+
+    <div class="field">
+      <label>Venue</label>
+      <select id="venueSelect"><option value="">— Select a venue —</option></select>
+    </div>
+
+    <div class="field">
+      <label>Event Name</label>
+      <input type="text" id="eventName" placeholder="e.g. Ladies Night, Live DJ, Pool Party">
+    </div>
+
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="eventDate">
+    </div>
+
+    <div class="field row">
+      <div>
+        <label>Start Time</label>
+        <input type="time" id="startTime">
+      </div>
+      <div>
+        <label>End Time</label>
+        <input type="time" id="endTime">
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="label-row">
+        <label>Description</label>
+        <button class="enhance-btn" id="enhanceBtn" onclick="enhanceDesc()">✨ Auto-fill</button>
+      </div>
+      <textarea id="description" placeholder="What's happening at this event..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Specials &amp; Perks</label>
+      <textarea id="specials" placeholder="Drink deals, happy hour, entry offers..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Poster Image URL</label>
+      <input type="url" id="posterUrl" placeholder="Paste image URL to include in the embed">
+    </div>
+  </div>
+
+  <!-- PREVIEW + POST -->
+  <div class="card">
+    <div class="section-title">Discord Embed Preview</div>
+    <div class="discord-wrap">
+      <div class="d-embed">
+        <div class="d-bar" id="dBar"></div>
+        <div class="d-body" id="dBody">
+          <div class="d-placeholder">Select a venue to preview...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="post-wrap">
+      <div class="post-divider"></div>
+      <button class="post-btn" id="postBtn" onclick="post()" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
+        </svg>
+        <span id="postLabel">Post to Discord</span>
+      </button>
+      <div id="postStatus"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const VENUES = [
+  {name:"Maggie Mays Pattaya",location:"Soi Chaiyapoon",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/4b2xcC7xzssmKenZ7",webhook:">WEBHOOK_REDACTED",logoUrl:"https://www.dropbox.com/scl/fi/cyeufmgfp4wxn8qydq8j2/Maggie-Mays-Pattaya-Logo-V2-Transparent.png?rlkey=vf653javqu7s0iwgtb1sfvmgc&raw=1",color:"#c8a951"},
+  {name:"Maggie Mays Jomtien",location:"Thappraya Road",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/bdoj7VcbnXdkHYC27",webhook:">WEBHOOK_REDACTED",logoUrl:"https://www.dropbox.com/scl/fi/jco1gch7vrvgoo7upf2k7/Maggie-Mays-Jomtien-Logo-V2-Transparent.png?rlkey=ay3kgbszx79xsuwv8rvlav5uz&raw=1",color:"#c8a951"},
+  {name:"Maggie Mays Darkside",location:"Khao Talo 9",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/NFo1vy6GNZz88NeC8",webhook:">WEBHOOK_REDACTED",logoUrl:"https://www.dropbox.com/scl/fi/4mcjbtxfk6gd9yf06e7ey/Maggie-Mays-Darkside-Logo-V2-Transparent.png?rlkey=2qcbhkkwxjdhk8f47dz5pkuhd&raw=1",color:"#c8a951"},
+  {name:"Maggie Mays Resort",location:"Jomtien",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/f8k14qnDGdCs2qfp7",webhook:">WEBHOOK_REDACTED",logoUrl:"https://www.dropbox.com/scl/fi/4b4xbecr2aquc6xmqp9of/Maggie-May-Resort-Logo-Transparent.png?rlkey=c2ml87uae4ntl4z680disk95l&raw=1",color:"#c8a951"},
+  {name:"Maggie Mays Beer Bar",location:"Soi Made in Thailand",hours:"6pm to 4am",mapsUrl:"https://maps.app.goo.gl/eWf5Fm2iUTp1gmDd6",webhook:">WEBHOOK_REDACTED",logoUrl:"https://www.dropbox.com/scl/fi/j6o0jajv0oy06teglnxe0/Maggie-Mays-Beer-Bar.png?rlkey=1t2b569glhganihvwro5wu2pl&raw=1",color:"#c8a951"},
+  {name:"Club Fate",location:"Soi Boomerang",hours:"6pm to 4am",mapsUrl:"https://maps.app.goo.gl/HsPebqEwHjeWZ5Jr7",webhook:">WEBHOOK_REDACTED",logoUrl:"https://www.dropbox.com/scl/fi/2xfs8niouzjj98n450wng/Club-Fate-Transparent-2.png?rlkey=xc89rd74komx221vu5tt39iu2&raw=1",color:"#9b3fcf"},
+  {name:"Catflaps",location:"Pratumnak",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/e6j8bsarfnvay9HN8",webhook:">WEBHOOK_REDACTED",logoUrl:"https://www.dropbox.com/scl/fi/nymjgfkjtaa4qbnhg70vx/Cat-Flaps-Logo-New.png?rlkey=z6363zz7jjx7do6393coeiw0v&raw=1",color:"#e8462a"},
+  {name:"The Camel Toe",location:"Soi Kophai 10",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/BtykkvmZsxS8K5bz9",webhook:">WEBHOOK_REDACTED",logoUrl:"https://www.dropbox.com/scl/fi/lp2yyde993lu79gbj2v9n/Camel-Toe-Logo.png?rlkey=af0s7gr1cl0eg8m2kk06lhffw&raw=1",color:"#d4a030"},
+  {name:"Free Willy",location:"Soi Regional Land",hours:"2pm to 1am",mapsUrl:"https://maps.app.goo.gl/1rMtajCmAyv6mdb99",webhook:">WEBHOOK_REDACTED",logoUrl:"https://www.dropbox.com/scl/fi/ow7bps3if9vs029qmssnj/Free-Willy-Transparent-Logo.png?rlkey=6vsba6348wnkc3l64ero4i30i&raw=1",color:"#1a8fc1"},
+  {name:"Bradleys",location:"Soi Chaiyapoon",hours:"3pm to Midnight",mapsUrl:"https://maps.app.goo.gl/SdqfFhwfxUHgYPa58",webhook:">WEBHOOK_REDACTED",logoUrl:"https://www.dropbox.com/scl/fi/ai5862bmz3jttdyco8dug/Bradleys.png?rlkey=dsjuvj287mtv2v16d2d62jome&raw=1",color:"#2e86de"},
+  {name:"The Brass House",location:"Soi Boonkanchana",hours:"2pm to Midnight",mapsUrl:"https://maps.app.goo.gl/J8DoUQdNZJUqVJru7",webhook:">WEBHOOK_REDACTED",logoUrl:"https://www.dropbox.com/scl/fi/18vsvfu8nkdtk2i5eeqeb/Brass-House.png?rlkey=ti1gys82ghdsrcb5yl764njp4&raw=1",color:"#b8860b"}
+];
+const GENERAL = ">WEBHOOK_REDACTED";
+
+let posted = false;
+
+// ── INIT ──────────────────────────────────────────────────────
+function init() {
+  const sel = document.getElementById('venueSelect');
+  VENUES.forEach((v, i) => {
+    const o = document.createElement('option');
+    o.value = i; o.textContent = v.name; sel.appendChild(o);
+  });
+  const now = new Date();
+  document.getElementById('eventDate').value =
+    `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+  ['venueSelect','eventName','eventDate','startTime','endTime','description','specials']
+    .forEach(id => document.getElementById(id).addEventListener('input', onChange));
+  document.getElementById('posterUrl').addEventListener('input', () => { fixDropbox(); onChange(); });
+  document.getElementById('venueSelect').addEventListener('change', onVenue);
+  initMic();
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function pad(n){ return String(n).padStart(2,'0') }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+
+function parseTime(s) {
+  s = s.trim().toLowerCase();
+  if (s === 'midnight') return '00:00';
+  if (s === 'noon') return '12:00';
+  const m = s.match(/^(\d+)(am|pm)$/);
+  if (!m) return '';
+  let h = +m[1];
+  if (m[2]==='pm' && h!==12) h+=12;
+  if (m[2]==='am' && h===12) h=0;
+  return `${pad(h)}:00`;
+}
+function fmt12(t) {
+  if (!t) return '';
+  const [h,m] = t.split(':').map(Number);
+  if (h===0)  return `12:${pad(m)} AM`;
+  if (h===12) return `12:${pad(m)} PM`;
+  return h<12 ? `${h}:${pad(m)} AM` : `${h-12}:${pad(m)} PM`;
+}
+function fmtDate(s) {
+  if (!s) return '';
+  const [y,mo,d] = s.split('-').map(Number);
+  return new Date(y,mo-1,d).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+function setAccent(hex) {
+  document.documentElement.style.setProperty('--accent', hex);
+  document.documentElement.style.setProperty('--ar', parseInt(hex.slice(1,3),16));
+  document.documentElement.style.setProperty('--ag', parseInt(hex.slice(3,5),16));
+  document.documentElement.style.setProperty('--ab', parseInt(hex.slice(5,7),16));
+  document.getElementById('accentWord').style.color = hex;
+}
+function getForm() {
+  const i = document.getElementById('venueSelect').value;
+  return {
+    venue      : i !== '' ? VENUES[+i] : null,
+    eventName  : document.getElementById('eventName').value.trim(),
+    date       : document.getElementById('eventDate').value,
+    startTime  : document.getElementById('startTime').value,
+    endTime    : document.getElementById('endTime').value,
+    description: document.getElementById('description').value.trim(),
+    specials   : document.getElementById('specials').value.trim(),
+    posterUrl  : document.getElementById('posterUrl').value.trim(),
+  };
+}
+
+// ── VENUE CHANGE ──────────────────────────────────────────────
+function onVenue() {
+  const i = document.getElementById('venueSelect').value;
+  if (i === '') { setAccent('#3a3a3a'); document.body.classList.remove('live'); return; }
+  const v = VENUES[+i];
+  setAccent(v.color);
+  document.body.classList.add('live');
+  const parts = v.hours.split(' to ');
+  if (parts.length === 2) {
+    document.getElementById('startTime').value = parseTime(parts[0]);
+    document.getElementById('endTime').value   = parseTime(parts[1]);
+  }
+  posted = false;
+  document.getElementById('postStatus').innerHTML = '';
+  document.getElementById('postLabel').textContent = 'Post to Discord';
+  document.getElementById('postBtn').classList.remove('done');
+  onChange();
+}
+
+function onChange() {
+  const d = getForm();
+  renderPreview(d);
+  document.getElementById('postBtn').disabled = !(d.venue && d.eventName && d.date && !posted);
+}
+
+// ── DISCORD PREVIEW ───────────────────────────────────────────
+function renderPreview(d) {
+  const bar  = document.getElementById('dBar');
+  const body = document.getElementById('dBody');
+  if (!d.venue) {
+    bar.style.cssText = '';
+    body.innerHTML = '<div class="d-placeholder">Select a venue to preview...</div>';
+    return;
+  }
+  bar.style.background = d.venue.color;
+  bar.style.boxShadow  = `2px 0 12px rgba(${parseInt(d.venue.color.slice(1,3),16)},${parseInt(d.venue.color.slice(3,5),16)},${parseInt(d.venue.color.slice(5,7),16)},.4)`;
+
+  const qr      = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(d.venue.mapsUrl)}`;
+  const dateStr = d.date ? fmtDate(d.date) : 'Date TBC';
+  const timeStr = (d.startTime && d.endTime) ? `${fmt12(d.startTime)} — ${fmt12(d.endTime)}` : d.venue.hours;
+
+  let h = '';
+
+  // Author
+  h += `<div class="d-author">`;
+  if (d.venue.logoUrl) h += `<img class="d-author-img" src="${esc(d.venue.logoUrl)}" alt="" onerror="this.style.display='none'">`;
+  h += `<span class="d-author-name">${esc(d.venue.name)}</span></div>`;
+
+  // Title
+  if (d.eventName) h += `<div class="d-title">${esc(d.eventName)}</div>`;
+
+  // Inner: text + QR
+  h += `<div class="d-inner"><div class="d-text">`;
+  if (d.description) h += `<div class="d-desc">${esc(d.description)}</div>`;
+
+  h += `<div class="d-fields">`;
+  h += `<div><div class="d-fn">Date</div><div class="d-fv">${esc(dateStr)}</div></div>`;
+  h += `<div><div class="d-fn">Time</div><div class="d-fv">${esc(timeStr)}</div></div>`;
+  h += `<div><div class="d-fn">Location</div><div class="d-fv">${esc(d.venue.location)}, Pattaya</div></div>`;
+  if (d.specials) h += `<div class="d-fw"><div class="d-fn">Specials &amp; Perks</div><div class="d-fv">${esc(d.specials)}</div></div>`;
+  h += `</div>`;
+  h += `<div style="margin-top:8px"><a href="${esc(d.venue.mapsUrl)}" target="_blank" style="color:#00aff4;font-size:.76rem;font-weight:500;text-decoration:none">📍 Get Directions</a></div>`;
+  h += `</div>`;
+
+  h += `<div class="d-qr"><div style="font-size:.6rem;color:#666;text-align:center;margin-bottom:4px">Scan for directions</div><img src="${qr}" alt="QR" onerror="this.style.display='none'"></div>`;
+  h += `</div>`;
+
+  // Poster image
+  if (d.posterUrl) h += `<img src="${esc(d.posterUrl)}" alt="Poster" style="width:100%;border-radius:3px;margin-top:10px;display:block" onerror="this.style.display='none'">`;
+
+  // Footer
+  h += `<div class="d-footer">`;
+  if (d.venue.logoUrl) h += `<img class="d-footer-img" src="${esc(d.venue.logoUrl)}" alt="" onerror="this.style.display='none'">`;
+  h += `<span class="d-footer-txt">Opening Hours: ${esc(d.venue.hours)} &nbsp;·&nbsp; GentsClubs.com Pattaya</span>`;
+  h += `</div>`;
+
+  body.innerHTML = h;
+}
+
+// ── POST ──────────────────────────────────────────────────────
+async function post() {
+  const d = getForm();
+  if (!d.venue || !d.eventName) return;
+
+  const btn = document.getElementById('postBtn');
+  const lbl = document.getElementById('postLabel');
+  const sta = document.getElementById('postStatus');
+  btn.disabled = true; lbl.textContent = 'Posting…'; sta.innerHTML = '';
+
+  const qr      = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(d.venue.mapsUrl)}`;
+  const dateStr = d.date ? fmtDate(d.date) : 'Date TBC';
+  const timeStr = (d.startTime && d.endTime) ? `${fmt12(d.startTime)} — ${fmt12(d.endTime)}` : d.venue.hours;
+  const color   = parseInt(d.venue.color.replace('#',''), 16);
+
+  const embed = {
+    author   : {name: d.venue.name, icon_url: d.venue.logoUrl},
+    title    : d.eventName,
+    color,
+    thumbnail: {url: qr},
+    fields   : [
+      {name:'Date',     value: dateStr,                      inline: true},
+      {name:'Time',     value: timeStr,                      inline: true},
+      {name:'Location', value:`${d.venue.location}, Pattaya`,inline: true},
+    ],
+    footer: {text:`Opening Hours: ${d.venue.hours} · GentsClubs.com Pattaya`, icon_url: d.venue.logoUrl}
+  };
+  const dirLink = `[📍 Get Directions](${d.venue.mapsUrl})`;
+  embed.description = d.description ? `${d.description}\n\n${dirLink}` : dirLink;
+  if (d.specials)  embed.fields.push({name:'Specials & Perks', value: d.specials, inline: false});
+  if (d.posterUrl) embed.image = {url: d.posterUrl};
+
+  const body    = JSON.stringify({embeds:[embed]});
+  const headers = {'Content-Type':'application/json'};
+  const hooks   = [{label: d.venue.name, url: d.venue.webhook}, {label:'General Channel', url: GENERAL}];
+
+  let allOk = true;
+  const lines = [];
+  for (const wh of hooks) {
+    try {
+      const r = await fetch(wh.url, {method:'POST', headers, body});
+      if (r.ok || r.status === 204) {
+        lines.push(`<div class="status-item s-ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>${esc(wh.label)}</div>`);
+      } else {
+        allOk = false;
+        lines.push(`<div class="status-item s-err"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>${esc(wh.label)}: HTTP ${r.status}</div>`);
+      }
+    } catch(e) {
+      allOk = false;
+      lines.push(`<div class="status-item s-err"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>${esc(wh.label)}: ${esc(e.message)}</div>`);
+    }
+  }
+  sta.innerHTML = lines.join('');
+  if (allOk) {
+    posted = true; lbl.textContent = 'Posted'; btn.classList.add('done');
+  } else {
+    btn.disabled = false; lbl.textContent = 'Retry';
+  }
+}
+
+// ── VENUE VOICE GUIDE ─────────────────────────────────────────
+const VOICE = {
+  "Maggie Mays Pattaya":  "The original. Confident, naughty ladies who have been there and done it all. This is the go-to spot that needs no introduction. Write like an institution that doesn't need to try hard — because it doesn't.",
+  "Maggie Mays Jomtien":  "Big, bold and unmissable. If you are in Jomtien this is the only stop you need. Write with energy and total conviction — the biggest and best in Jomtien, full stop.",
+  "Maggie Mays Darkside": "No fuss, cold beers, great value, proper expat crowd. Unpretentious and proud of it. Write in a relaxed, straight-talking way — never flashy, never trying to be something it isn't.",
+  "Maggie Mays Resort":   "Huge pool, great cafe and a proper Gents Club onsite. No room needed — non-guests are always welcome. Always make it clear in the copy that outsiders are welcome, not just hotel guests.",
+  "Maggie Mays Beer Bar": "Late night sports and pool, central Pattaya, cold beer and big screens. Write in a lively, event-focused way that speaks to the late-night crowd who want a great atmosphere.",
+  "Club Fate":            "Late night nightclub energy, hype and bold attitude. The night does not start until you are here. Write like a hype man — big, loud, electric. Make people feel like they have no choice but to show up.",
+  "Catflaps":             "Flirty, playful, girly fun. The girls run the show here. Write in a cheeky, fun and spirited way with personality in every line.",
+  "The Camel Toe":        "Experienced ladies who know exactly what they are doing. Wink included. Lean into the MILF bar identity with a knowing, playful and confident tone.",
+  "Free Willy":           "Naughty, anything goes, leave your inhibitions at the door. Be a bit more daring than The Camel Toe. Cheeky, suggestive and unapologetic — no filters.",
+  "Bradleys":             "Sassy ladyboys, fun and fierce. Not your average night out. Write with sassy confidence and attitude — bold, fun and full of personality.",
+  "The Brass House":      "No holds barred. If you want it you will find it here. Write with bold, suggestive energy that hints anything goes. Direct, daring, no apologies."
+};
+
+// ── DROPBOX FIX ───────────────────────────────────────────────
+function fixDropbox() {
+  const el = document.getElementById('posterUrl');
+  if (el.value.includes('dropbox.com')) {
+    el.value = el.value.replace(/dl=[01]/g, 'raw=1');
+  }
+}
+
+// ── LOCAL COPY GENERATORS ─────────────────────────────────────
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+const COPY_GEN = {
+  "Maggie Mays Pattaya": (ev, tm, sp) => {
+    const open = pick([`${ev} at the original Maggie Mays.`, `${ev} is on at the one that started it all.`]);
+    const mid  = sp.length ? `${sp.join(', ')} on the night.` : pick([`The ladies know how to run a night.`, `Same great crowd, same great spot.`]);
+    const close = tm ? `Get here ${tm}.` : pick([`Come and see why this place needs no introduction.`, `You already know where to be.`]);
+    return `${open} ${mid} ${close}`;
+  },
+  "Maggie Mays Jomtien": (ev, tm, sp) => {
+    const open = pick([`${ev} at Maggie Mays Jomtien.`, `Jomtien's biggest night just got bigger.`]);
+    const mid  = sp.length ? `${sp.join(', ')}.` : `The biggest and best in Jomtien, no debate.`;
+    const close = tm ? `Starting ${tm}, be here.` : `If you are in Jomtien this is the only stop you need.`;
+    return `${open} ${mid} ${close}`;
+  },
+  "Maggie Mays Darkside": (ev, tm, sp) => {
+    const open = pick([`${ev} at Maggie Mays Darkside.`, `No fuss, just ${ev} at Maggie Mays Darkside.`]);
+    const mid  = sp.length ? `${sp.join(', ')}.` : `Cold beers, proper expat crowd, no pretence.`;
+    const close = tm ? `${tm}, come as you are.` : `Come as you are.`;
+    return `${open} ${mid} ${close}`;
+  },
+  "Maggie Mays Resort": (ev, tm, sp) => {
+    const open = `${ev} at Maggie Mays Resort.`;
+    const mid  = sp.length ? `${sp.join(', ')}.` : `The pool is open, the bar is stocked and you do not need a room key to get in.`;
+    const close = tm ? `Non-guests always welcome, ${tm}.` : `Non-guests are always welcome. Come on down.`;
+    return `${open} ${mid} ${close}`;
+  },
+  "Maggie Mays Beer Bar": (ev, tm, sp) => {
+    const open = pick([`${ev} at Maggie Mays Beer Bar.`, `Central Pattaya's best spot for ${ev}.`]);
+    const mid  = sp.length ? `${sp.join(', ')}.` : `Big screens, cold beer, the right crowd.`;
+    const close = tm ? `Doors from ${tm}.` : `This is where the late night crowd comes to life.`;
+    return `${open} ${mid} ${close}`;
+  },
+  "Club Fate": (ev, tm, sp) => {
+    const open = pick([`${ev} at Club Fate. The night does not start until you walk through that door.`, `Club Fate is going off for ${ev}.`]);
+    const mid  = sp.length ? `${sp.join(', ')}.` : `This is not a maybe night. This is a be there night.`;
+    const close = tm ? `From ${tm}. No excuses.` : `Your night starts here. No excuses.`;
+    return `${open} ${mid} ${close}`;
+  },
+  "Catflaps": (ev, tm, sp) => {
+    const open = pick([`${ev} at Catflaps and the girls are already planning something.`, `The girls are running the show for ${ev} at Catflaps.`]);
+    const mid  = sp.length ? `${sp.join(', ')}.` : `Flirty, fun and a little bit cheeky, just the way we like it.`;
+    const close = tm ? `From ${tm}, come play.` : `Come play.`;
+    return `${open} ${mid} ${close}`;
+  },
+  "The Camel Toe": (ev, tm, sp) => {
+    const open = pick([`${ev} at The Camel Toe. The ladies know exactly what they are doing, they always do.`, `The experienced ladies of The Camel Toe are hosting ${ev}.`]);
+    const mid  = sp.length ? `${sp.join(', ')}.` : `Come for the atmosphere. Stay because you cannot bring yourself to leave.`;
+    const close = tm ? `From ${tm}. You know you want to.` : `You know you want to.`;
+    return `${open} ${mid} ${close}`;
+  },
+  "Free Willy": (ev, tm, sp) => {
+    const open = pick([`${ev} at Free Willy. Leave your inhibitions at the door.`, `Free Willy is hosting ${ev} and anything goes.`]);
+    const mid  = sp.length ? `${sp.join(', ')}.` : `Naughty, shameless and exactly as good as it sounds.`;
+    const close = tm ? `From ${tm}. Do not say we did not warn you.` : `Do not say we did not warn you.`;
+    return `${open} ${mid} ${close}`;
+  },
+  "Bradleys": (ev, tm, sp) => {
+    const open = pick([`${ev} at Bradleys. Not your average night out, not even close.`, `Bradleys is bringing ${ev} and the ladyboys are ready.`]);
+    const mid  = sp.length ? `${sp.join(', ')}.` : `Sassy, fierce and more fun than you expected. Always.`;
+    const close = tm ? `From ${tm}. Come for the show, stay for the chaos.` : `Come for the show, stay for the chaos.`;
+    return `${open} ${mid} ${close}`;
+  },
+  "The Brass House": (ev, tm, sp) => {
+    const open = pick([`${ev} at The Brass House. If you want it, you will find it here.`, `The Brass House is hosting ${ev} and no holds barred.`]);
+    const mid  = sp.length ? `${sp.join(', ')}.` : `Bold, daring and exactly what you were looking for.`;
+    const close = tm ? `From ${tm}. You have been warned.` : `You have been warned.`;
+    return `${open} ${mid} ${close}`;
+  },
+};
+
+// ── AUTO-FILL ─────────────────────────────────────────────────
+function enhanceDesc() {
+  const d = getForm();
+  if (!d.venue) { alert('Select a venue first.'); return; }
+
+  const btn = document.getElementById('enhanceBtn');
+  btn.textContent = '…'; btn.disabled = true;
+
+  const tm = (d.startTime && d.endTime) ? `${fmt12(d.startTime)} to ${fmt12(d.endTime)}` : '';
+  const sp = d.specials
+    ? d.specials.split(/[,\n]+/).map(s => s.trim()).filter(Boolean).map(s => s.charAt(0).toUpperCase() + s.slice(1))
+    : [];
+
+  const gen = COPY_GEN[d.venue.name];
+  const copy = gen
+    ? gen(d.eventName || "tonight's event", tm, sp)
+    : `${d.eventName || 'Event'} at ${d.venue.name}${tm ? `. ${tm}.` : '.'}`;
+
+  document.getElementById('description').value = copy;
+
+  const specEl = document.getElementById('specials');
+  if (sp.length) specEl.value = sp.join(', ');
+
+  onChange();
+  btn.textContent = '✨ Auto-fill'; btn.disabled = false;
+}
+
+// ── VOICE ─────────────────────────────────────────────────────
+let recog = null;
+function initMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const btn = document.getElementById('micBtn');
+  if (!SR) return;
+  btn.disabled = false;
+  recog = new SR();
+  recog.lang='en-US'; recog.continuous=false; recog.interimResults=false;
+  recog.onresult = e => { parseVoice(e.results[0][0].transcript); stopMic(); };
+  recog.onerror  = stopMic;
+  recog.onend    = stopMic;
+  btn.addEventListener('click', () => {
+    if (btn.classList.contains('on')) { recog.stop(); return; }
+    try { recog.start(); } catch(e) { return; }
+    btn.classList.add('on');
+    document.getElementById('micLabel').textContent = 'Listening…';
+  });
+}
+function stopMic() {
+  document.getElementById('micBtn').classList.remove('on');
+  document.getElementById('micLabel').textContent = 'Voice Input';
+}
+function parseVoice(t) {
+  const low = t.toLowerCase();
+  const vi = VENUES.findIndex(v => v.name.toLowerCase().split(' ').some(p => p.length > 3 && low.includes(p)));
+  if (vi >= 0) { document.getElementById('venueSelect').value = vi; onVenue(); }
+  const nm = low.match(/(?:event(?:\s+(?:is|name\s+is))?|called|named)\s+([a-z][^,.\n]+?)(?:\s+(?:on|at|date|description|specials?)|$)/i);
+  if (nm) setVal('eventName', tc(nm[1].trim()));
+  const days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  const di = days.findIndex(d => low.includes(d));
+  if (di >= 0) {
+    const now = new Date(); let diff = di - now.getDay(); if (diff<=0) diff+=7;
+    const t2 = new Date(now); t2.setDate(now.getDate()+diff);
+    document.getElementById('eventDate').value = `${t2.getFullYear()}-${pad(t2.getMonth()+1)}-${pad(t2.getDate())}`;
+  }
+  const dm = low.match(/description\s+(?:is\s+)?(.+?)(?:\s+specials?|$)/i);
+  if (dm) setVal('description', tc(dm[1].trim()));
+  const sm = low.match(/specials?\s+(?:are\s+|is\s+)?(.+?)(?:\s+description|$)/i);
+  if (sm) setVal('specials', tc(sm[1].trim()));
+  onChange();
+}
+function setVal(id, v) { if (v) document.getElementById(id).value = v; }
+function tc(s) { return s.replace(/\b\w/g, c => c.toUpperCase()); }
+
+init();
+</script>
+</body>
+</html>
