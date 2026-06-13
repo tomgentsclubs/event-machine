@@ -792,10 +792,18 @@ async function openCalModal() {
   body.innerHTML = '<div class="cal-loading">Loading events…</div>';
 
   const today = new Date(); today.setHours(0,0,0,0);
+  const DIRECT_URL = 'https://tomgentsclubs.github.io/pattayapilot/api/v1/events/index.json';
+  const PROXY_URL  = 'https://corsproxy.io/?url=' + DIRECT_URL;
   let events;
   try {
-    const res = await fetch('https://tomgentsclubs.github.io/pattayapilot/api/v1/events/index.json');
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    let res;
+    try {
+      res = await fetch(PROXY_URL);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    } catch(_proxyErr) {
+      res = await fetch(DIRECT_URL);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    }
     events = await res.json();
   } catch(e) {
     body.innerHTML = `<div class="cal-msg">Could not load calendar. ${esc(e.message)}</div>`;
