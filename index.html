@@ -176,6 +176,15 @@ input[type=date],input[type=time]{color-scheme:dark}
 .post-btn.done{background:#0f2e0f;color:#4caf50;cursor:default;
   box-shadow:none;transform:none;filter:none}
 
+.clear-btn{
+  width:100%;margin-top:10px;padding:9px 16px;
+  font-size:.75rem;font-weight:600;letter-spacing:.3px;text-transform:uppercase;
+  font-family:inherit;border:1px solid #1e1e1e;border-radius:8px;cursor:pointer;
+  background:transparent;color:#444;
+  transition:border-color .2s,color .2s;
+}
+.clear-btn:hover{border-color:#333;color:#888}
+
 .status-item{
   display:flex;align-items:center;gap:8px;
   font-size:.74rem;font-weight:600;padding:6px 11px;border-radius:6px;margin-top:7px;
@@ -476,6 +485,7 @@ input[type=date],input[type=time]{color-scheme:dark}
         </button>
       </div>
       <div id="postStatus"></div>
+      <button class="clear-btn" onclick="clearForm()">Clear Form</button>
     </div>
   </div>
 
@@ -573,6 +583,31 @@ function fmtDate(s) {
   const [y,mo,d] = s.split('-').map(Number);
   return new Date(y,mo-1,d).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 }
+function clearForm() {
+  const now = new Date();
+  document.getElementById('venueSelect').value  = '';
+  document.getElementById('eventName').value    = '';
+  document.getElementById('description').value  = '';
+  document.getElementById('specials').value     = '';
+  document.getElementById('posterUrl').value    = '';
+  document.getElementById('eventDate').value    =
+    `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+  document.getElementById('startTime').value    = '';
+  document.getElementById('endTime').value      = '';
+  document.getElementById('importedBadge').style.display = 'none';
+  document.getElementById('postStatus').innerHTML = '';
+  document.getElementById('saveBtn').disabled    = true;
+  document.getElementById('publishBtn').disabled = true;
+  document.getElementById('saveLabel').textContent    = 'Save for Later';
+  document.getElementById('publishLabel').textContent = 'Publish Now';
+  document.getElementById('saveBtn').classList.remove('done');
+  document.getElementById('publishBtn').classList.remove('done');
+  posted = false;
+  setAccent('#3a3a3a');
+  document.body.classList.remove('live');
+  renderPreview({});
+}
+
 function setAccent(hex) {
   document.documentElement.style.setProperty('--accent', hex);
   document.documentElement.style.setProperty('--ar', parseInt(hex.slice(1,3),16));
