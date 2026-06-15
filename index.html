@@ -996,7 +996,7 @@ function makeEntry(d, status) {
 
 function entryToForm(e) {
   return {
-    venue      : VENUES[e.venueIdx] || VENUES.find(v => v.name === e.venueName),
+    venue      : VENUES.find(v => v.name.toLowerCase() === (e.venueName || '').toLowerCase()) || VENUES[e.venueIdx],
     eventName  : e.eventName  || '',
     date       : e.date       || '',
     startTime  : e.startTime  || '',
@@ -1010,6 +1010,9 @@ function entryToForm(e) {
 function persistEntry(entry) {
   const all = getHistory().filter(e => e.id !== entry.id);
   entry.savedAt = new Date().toISOString();
+  // Keep venueIdx in sync with current array order so lookups stay accurate
+  const currentIdx = VENUES.findIndex(v => v.name.toLowerCase() === (entry.venueName || '').toLowerCase());
+  if (currentIdx >= 0) entry.venueIdx = currentIdx;
   all.unshift(entry);
   localStorage.setItem(HISTORY_KEY, JSON.stringify(all));
 }
@@ -1017,8 +1020,9 @@ function persistEntry(entry) {
 function loadFromHistory(id) {
   const entry = getHistory().find(e => e.id === id);
   if (!entry) return;
-  const vi = entry.venueIdx >= 0 ? entry.venueIdx : VENUES.findIndex(v => v.name === entry.venueName);
-  document.getElementById('venueSelect').value   = vi >= 0 ? vi : '';
+  const vi = VENUES.findIndex(v => v.name.toLowerCase() === (entry.venueName || '').toLowerCase());
+  const resolvedIdx = vi >= 0 ? vi : entry.venueIdx;
+  document.getElementById('venueSelect').value   = resolvedIdx >= 0 ? resolvedIdx : '';
   onVenue();
   document.getElementById('eventName').value     = entry.eventName   || '';
   document.getElementById('eventDate').value     = entry.date        || '';
