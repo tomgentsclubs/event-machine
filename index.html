@@ -1119,8 +1119,8 @@ function renderVenueQuickTools() {
         </div>
         <div class="vqt-btns">
           <button class="vqt-btn" onclick="vqtCopy(this,'${esc(v.mapsUrl)}')">Copy Maps URL</button>
-          <button class="vqt-btn" onclick="vqtCopyImg(this,'${esc(localQr)}','Copy QR Image')">Copy QR Image</button>
-          <button class="vqt-btn" data-full="${esc(v.logoUrl)}" onclick="vqtCopyLogoImg(this)">Copy Logo Image</button>
+          <button class="vqt-btn" onclick="vqtCopyQr(this,'${esc(localQr)}')">Copy QR Image</button>
+          <button class="vqt-btn" onclick="vqtCopy(this,'https://tomgentsclubs.github.io/event-machine/${esc(v.logoUrl.replace(BASE,''))}')">Copy Logo URL</button>
         </div>
       </div>
     </div>`;
@@ -1135,7 +1135,7 @@ async function vqtCopy(btn, text) {
   setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
 }
 
-async function vqtCopyImg(btn, path, label) {
+async function vqtCopyQr(btn, path) {
   try {
     const res = await fetch(path);
     if (!res.ok) throw new Error('not found');
@@ -1143,70 +1143,10 @@ async function vqtCopyImg(btn, path, label) {
     await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
     btn.textContent = 'Copied!';
     btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = label; btn.classList.remove('copied'); }, 1500);
+    setTimeout(() => { btn.textContent = 'Copy QR Image'; btn.classList.remove('copied'); }, 1500);
   } catch(e) {
     btn.textContent = 'Failed';
-    setTimeout(() => { btn.textContent = label; }, 1500);
-  }
-}
-
-async function vqtCopyLogoImg(btn) {
-  const label = 'Copy Logo Image';
-  try {
-    // Step 1: read full-size logo path from data attribute and build absolute URL
-    const relPath = btn.dataset.full;
-    const absUrl  = window.location.origin + '/' + relPath.replace(/^\//, '');
-
-    // Step 2: load image using absolute URL, no crossOrigin (same-origin assets)
-    const img = await new Promise((resolve, reject) => {
-      const el = new Image();
-      el.onload  = () => resolve(el);
-      el.onerror = () => reject(new Error('image load failed: ' + absUrl));
-      el.src = absUrl;
-    });
-
-    // Step 3: create canvas and fill ENTIRE surface with solid green first
-    const canvas = document.createElement('canvas');
-    canvas.width  = img.naturalWidth  || img.width;
-    canvas.height = img.naturalHeight || img.height;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#00FF00';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Step 4: draw image on top of green background
-    ctx.drawImage(img, 0, 0);
-    console.log('Logo canvas:', canvas.width, 'x', canvas.height, '| image natural:', img.naturalWidth, 'x', img.naturalHeight);
-
-    // Step 5: read all pixel data
-    const idata = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const d = idata.data;
-
-    // Step 6: log first 20 pixels for debugging
-    const preview = [];
-    for (let i = 0; i < Math.min(80, d.length); i += 4) {
-      preview.push(`(${d[i]},${d[i+1]},${d[i+2]},${d[i+3]})`);
-    }
-    console.log('Logo canvas first 20 pixels [R,G,B,A]:', preview.join(' '));
-
-    // Step 7: chroma-key — remove near-green pixels (avoids keying purple logos)
-    // Step 8: also remove near-black pixels (transparency flattened to black)
-    for (let i = 0; i < d.length; i += 4) {
-      const r = d[i], g = d[i+1], b = d[i+2];
-      if (r < 80 && g > 180 && b < 80) { d[i+3] = 0; continue; }
-      if (r < 15 && g < 15  && b < 15) { d[i+3] = 0; }
-    }
-
-    // Step 9: write back and export
-    ctx.putImageData(idata, 0, 0);
-    const pngBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-    await navigator.clipboard.write([new ClipboardItem({'image/png': pngBlob})]);
-    btn.textContent = 'Copied!';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = label; btn.classList.remove('copied'); }, 1500);
-  } catch(e) {
-    console.error('vqtCopyLogoImg error:', e);
-    btn.textContent = 'Failed';
-    setTimeout(() => { btn.textContent = label; }, 1500);
+    setTimeout(() => { btn.textContent = 'Copy QR Image'; }, 1500);
   }
 }
 
