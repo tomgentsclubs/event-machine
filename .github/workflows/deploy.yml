@@ -1,0 +1,52 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inject webhook secrets
+        run: |
+          cp index.html index.built.html
+          sed -i "s|WEBHOOK_MAGGIE_MAYS_PATTAYA|${{ secrets.WEBHOOK_MAGGIE_MAYS_PATTAYA }}|g" index.built.html
+          sed -i "s|WEBHOOK_MAGGIE_MAYS_JOMTIEN|${{ secrets.WEBHOOK_MAGGIE_MAYS_JOMTIEN }}|g" index.built.html
+          sed -i "s|WEBHOOK_MAGGIE_MAYS_DARKSIDE|${{ secrets.WEBHOOK_MAGGIE_MAYS_DARKSIDE }}|g" index.built.html
+          sed -i "s|WEBHOOK_MAGGIE_MAYS_RESORT|${{ secrets.WEBHOOK_MAGGIE_MAYS_RESORT }}|g" index.built.html
+          sed -i "s|WEBHOOK_MAGGIE_MAYS_BEER_BAR|${{ secrets.WEBHOOK_MAGGIE_MAYS_BEER_BAR }}|g" index.built.html
+          sed -i "s|WEBHOOK_CLUB_FATE|${{ secrets.WEBHOOK_CLUB_FATE }}|g" index.built.html
+          sed -i "s|WEBHOOK_CATFLAPS|${{ secrets.WEBHOOK_CATFLAPS }}|g" index.built.html
+          sed -i "s|WEBHOOK_THE_CAMEL_TOE|${{ secrets.WEBHOOK_THE_CAMEL_TOE }}|g" index.built.html
+          sed -i "s|WEBHOOK_FREE_WILLY|${{ secrets.WEBHOOK_FREE_WILLY }}|g" index.built.html
+          sed -i "s|WEBHOOK_BRADLEYS|${{ secrets.WEBHOOK_BRADLEYS }}|g" index.built.html
+          sed -i "s|WEBHOOK_THE_BRASS_HOUSE|${{ secrets.WEBHOOK_THE_BRASS_HOUSE }}|g" index.built.html
+          sed -i "s|WEBHOOK_GENERAL|${{ secrets.WEBHOOK_GENERAL }}|g" index.built.html
+          mv index.built.html index.html
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - id: deployment
+        name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
