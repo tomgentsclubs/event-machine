@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<base href="/event-machine/">
 <title>Event Machine — GentsClubs.com</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -554,18 +553,19 @@ input[type=date],input[type=time]{color-scheme:dark}
 </div>
 
 <script>
+const BASE = window.location.pathname.replace(/\/[^/]*$/, '/');
 const VENUES = [
-  {name:"Maggie Mays Pattaya",location:"Soi Chaiyapoon",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/4b2xcC7xzssmKenZ7",webhook:"WEBHOOK_MAGGIE_MAYS_PATTAYA",logoUrl:"assets/logos/Maggie-Mays-Pattaya-Logo-V2-Transparent.png",logoSmall:"assets/logos/small/Maggie-Mays-Pattaya-Logo-V2-Transparent.webp",color:"#808080"},
-  {name:"Club Fate",location:"Soi Boomerang",hours:"6pm to 4am",mapsUrl:"https://maps.app.goo.gl/HsPebqEwHjeWZ5Jr7",webhook:"WEBHOOK_CLUB_FATE",logoUrl:"assets/logos/Club-Fate-Transparent-2.png",logoSmall:"assets/logos/small/Club-Fate-Transparent-2.webp",color:"#9b3fcf"},
-  {name:"The Camel Toe",location:"Soi Kophai 10",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/BtykkvmZsxS8K5bz9",webhook:"WEBHOOK_THE_CAMEL_TOE",logoUrl:"assets/logos/Camel-Toe-Logo.png",logoSmall:"assets/logos/small/Camel-Toe-Logo.webp",color:"#FFD700"},
-  {name:"Catflaps",location:"Pratumnak",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/e6j8bsarfnvay9HN8",webhook:"WEBHOOK_CATFLAPS",logoUrl:"assets/logos/Cat-Flaps-Logo-New.png",logoSmall:"assets/logos/small/Cat-Flaps-Logo-New.webp",color:"#f0f0f0"},
-  {name:"Maggie Mays Jomtien",location:"Thappraya Road",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/bdoj7VcbnXdkHYC27",webhook:"WEBHOOK_MAGGIE_MAYS_JOMTIEN",logoUrl:"assets/logos/Maggie-Mays-Jomtien-Logo-V2-Transparent.png",logoSmall:"assets/logos/small/Maggie-Mays-Jomtien-Logo-V2-Transparent.webp",color:"#89CFF0"},
-  {name:"Free Willy",location:"Soi Regional Land",hours:"2pm to 1am",mapsUrl:"https://maps.app.goo.gl/1rMtajCmAyv6mdb99",webhook:"WEBHOOK_FREE_WILLY",logoUrl:"assets/logos/Free-Willy-Transparent-Logo.png",logoSmall:"assets/logos/small/Free-Willy-Transparent-Logo.webp",color:"#1a3a8c"},
-  {name:"Maggie Mays Darkside",location:"Khao Talo 9",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/NFo1vy6GNZz88NeC8",webhook:"WEBHOOK_MAGGIE_MAYS_DARKSIDE",logoUrl:"assets/logos/Maggie-Mays-Darkside-Logo-V2-Transparent.png",logoSmall:"assets/logos/small/Maggie-Mays-Darkside-Logo-V2-Transparent.webp",color:"#c8860a"},
-  {name:"Maggie Mays Resort",location:"Jomtien",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/f8k14qnDGdCs2qfp7",webhook:"WEBHOOK_MAGGIE_MAYS_RESORT",logoUrl:"assets/logos/Maggie-Mays-Resort-2.png",logoSmall:"assets/logos/small/Maggie-Mays-Resort-2.webp",color:"#00BFFF"},
-  {name:"Bradleys",location:"Soi Chaiyapoon",hours:"3pm to Midnight",mapsUrl:"https://maps.app.goo.gl/SdqfFhwfxUHgYPa58",webhook:"WEBHOOK_BRADLEYS",logoUrl:"assets/logos/Bradleys.png",logoSmall:"assets/logos/small/Bradleys.webp",color:"#111111"},
-  {name:"The Brass House",location:"Soi Boonkanchana",hours:"2pm to Midnight",mapsUrl:"https://maps.app.goo.gl/J8DoUQdNZJUqVJru7",webhook:"WEBHOOK_THE_BRASS_HOUSE",logoUrl:"assets/logos/Brass-House.png",logoSmall:"assets/logos/small/Brass-House.webp",color:"#8B0000"},
-  {name:"Maggie Mays Beer Bar",location:"Soi Made in Thailand",hours:"6pm to 4am",mapsUrl:"https://maps.app.goo.gl/eWf5Fm2iUTp1gmDd6",webhook:"WEBHOOK_MAGGIE_MAYS_BEER_BAR",logoUrl:"assets/logos/Maggie-Mays-Beer-Bar.png",logoSmall:"assets/logos/small/Maggie-Mays-Beer-Bar.webp",color:"#c8a951"},
+  {name:"Maggie Mays Pattaya",location:"Soi Chaiyapoon",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/4b2xcC7xzssmKenZ7",webhook:"WEBHOOK_MAGGIE_MAYS_PATTAYA",logoUrl:BASE+"assets/logos/Maggie-Mays-Pattaya-Logo-V2-Transparent.png",logoSmall:BASE+"assets/logos/small/Maggie-Mays-Pattaya-Logo-V2-Transparent.webp",color:"#808080"},
+  {name:"Club Fate",location:"Soi Boomerang",hours:"6pm to 4am",mapsUrl:"https://maps.app.goo.gl/HsPebqEwHjeWZ5Jr7",webhook:"WEBHOOK_CLUB_FATE",logoUrl:BASE+"assets/logos/Club-Fate-Transparent-2.png",logoSmall:BASE+"assets/logos/small/Club-Fate-Transparent-2.webp",color:"#9b3fcf"},
+  {name:"The Camel Toe",location:"Soi Kophai 10",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/BtykkvmZsxS8K5bz9",webhook:"WEBHOOK_THE_CAMEL_TOE",logoUrl:BASE+"assets/logos/Camel-Toe-Logo.png",logoSmall:BASE+"assets/logos/small/Camel-Toe-Logo.webp",color:"#FFD700"},
+  {name:"Catflaps",location:"Pratumnak",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/e6j8bsarfnvay9HN8",webhook:"WEBHOOK_CATFLAPS",logoUrl:BASE+"assets/logos/Cat-Flaps-Logo-New.png",logoSmall:BASE+"assets/logos/small/Cat-Flaps-Logo-New.webp",color:"#f0f0f0"},
+  {name:"Maggie Mays Jomtien",location:"Thappraya Road",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/bdoj7VcbnXdkHYC27",webhook:"WEBHOOK_MAGGIE_MAYS_JOMTIEN",logoUrl:BASE+"assets/logos/Maggie-Mays-Jomtien-Logo-V2-Transparent.png",logoSmall:BASE+"assets/logos/small/Maggie-Mays-Jomtien-Logo-V2-Transparent.webp",color:"#89CFF0"},
+  {name:"Free Willy",location:"Soi Regional Land",hours:"2pm to 1am",mapsUrl:"https://maps.app.goo.gl/1rMtajCmAyv6mdb99",webhook:"WEBHOOK_FREE_WILLY",logoUrl:BASE+"assets/logos/Free-Willy-Transparent-Logo.png",logoSmall:BASE+"assets/logos/small/Free-Willy-Transparent-Logo.webp",color:"#1a3a8c"},
+  {name:"Maggie Mays Darkside",location:"Khao Talo 9",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/NFo1vy6GNZz88NeC8",webhook:"WEBHOOK_MAGGIE_MAYS_DARKSIDE",logoUrl:BASE+"assets/logos/Maggie-Mays-Darkside-Logo-V2-Transparent.png",logoSmall:BASE+"assets/logos/small/Maggie-Mays-Darkside-Logo-V2-Transparent.webp",color:"#c8860a"},
+  {name:"Maggie Mays Resort",location:"Jomtien",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/f8k14qnDGdCs2qfp7",webhook:"WEBHOOK_MAGGIE_MAYS_RESORT",logoUrl:BASE+"assets/logos/Maggie-Mays-Resort-2.png",logoSmall:BASE+"assets/logos/small/Maggie-Mays-Resort-2.webp",color:"#00BFFF"},
+  {name:"Bradleys",location:"Soi Chaiyapoon",hours:"3pm to Midnight",mapsUrl:"https://maps.app.goo.gl/SdqfFhwfxUHgYPa58",webhook:"WEBHOOK_BRADLEYS",logoUrl:BASE+"assets/logos/Bradleys.png",logoSmall:BASE+"assets/logos/small/Bradleys.webp",color:"#111111"},
+  {name:"The Brass House",location:"Soi Boonkanchana",hours:"2pm to Midnight",mapsUrl:"https://maps.app.goo.gl/J8DoUQdNZJUqVJru7",webhook:"WEBHOOK_THE_BRASS_HOUSE",logoUrl:BASE+"assets/logos/Brass-House.png",logoSmall:BASE+"assets/logos/small/Brass-House.webp",color:"#8B0000"},
+  {name:"Maggie Mays Beer Bar",location:"Soi Made in Thailand",hours:"6pm to 4am",mapsUrl:"https://maps.app.goo.gl/eWf5Fm2iUTp1gmDd6",webhook:"WEBHOOK_MAGGIE_MAYS_BEER_BAR",logoUrl:BASE+"assets/logos/Maggie-Mays-Beer-Bar.png",logoSmall:BASE+"assets/logos/small/Maggie-Mays-Beer-Bar.webp",color:"#c8a951"},
 ];
 const GENERAL = "WEBHOOK_GENERAL";
 
@@ -1110,7 +1110,7 @@ function renderVenueQuickTools() {
   const grid = document.getElementById('vqtGrid');
   grid.innerHTML = VENUES.map(v => {
     const slug = venueSlug(v.name);
-    const localQr   = `assets/qr/${slug}.png`;
+    const localQr   = BASE + `assets/qr/${slug}.png`;
     return `<div class="vqt-card">
       <div class="vqt-card-inner" style="--vc:${esc(v.color)}">
         <div class="vqt-name-row">
