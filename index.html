@@ -42,20 +42,6 @@ h1{font-size:1.25rem;font-weight:900;letter-spacing:-.6px;color:#fff;line-height
 h1 em{font-style:normal;color:var(--accent);transition:color .35s}
 .tagline{font-size:.65rem;color:#333;margin-top:3px;text-transform:uppercase;letter-spacing:.4px;font-weight:600}
 
-/* voice button */
-.mic-btn{
-  margin-left:auto;
-  display:flex;align-items:center;gap:7px;
-  background:#0d0d0d;border:1px solid #1e1e1e;border-radius:7px;
-  color:#484848;padding:8px 14px;cursor:pointer;
-  font-size:.75rem;font-family:inherit;font-weight:600;letter-spacing:.2px;
-  transition:all .2s;white-space:nowrap;
-}
-.mic-btn:hover{border-color:#2e2e2e;color:#888}
-.mic-btn.on{border-color:#c0392b;color:#e74c3c;background:#130808;
-  box-shadow:0 0 14px rgba(231,76,60,.18);animation:breathe 1.3s ease-in-out infinite}
-.mic-btn:disabled{opacity:.25;pointer-events:none}
-@keyframes breathe{0%,100%{opacity:1}50%{opacity:.5}}
 
 /* ── LAYOUT ── */
 .wrap{
@@ -425,12 +411,6 @@ input[type=date],input[type=time]{color-scheme:dark}
     <h1>Event <em id="accentWord">Machine</em></h1>
     <p class="tagline">GentsClubs.com &nbsp;·&nbsp; Pattaya</p>
   </div>
-  <button class="mic-btn" id="micBtn" disabled>
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1 1.93c-3.94-.49-7-3.85-7-7.93H2c0 4.42 3.07 8.07 7 8.93V20h2v-3.07c3.93-.86 7-4.51 7-8.93h-2c0 4.08-3.06 7.44-7 7.93V16h-2v-.07z"/>
-    </svg>
-    <span id="micLabel">Voice Input</span>
-  </button>
 </header>
 
 <div class="wrap">
@@ -595,7 +575,6 @@ function init() {
   });
   document.getElementById('posterUrl').addEventListener('input', () => { fixDropbox(); onChange(); });
   document.getElementById('venueSelect').addEventListener('change', onVenue);
-  initMic();
   renderHistory();
   renderVenueQuickTools();
 }
@@ -1302,51 +1281,6 @@ function enhanceDesc() {
   onChange();
   btn.textContent = '✨ Auto-fill'; btn.disabled = false;
 }
-
-// ── VOICE ─────────────────────────────────────────────────────
-let recog = null;
-function initMic() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const btn = document.getElementById('micBtn');
-  if (!SR) return;
-  btn.disabled = false;
-  recog = new SR();
-  recog.lang='en-US'; recog.continuous=false; recog.interimResults=false;
-  recog.onresult = e => { parseVoice(e.results[0][0].transcript); stopMic(); };
-  recog.onerror  = stopMic;
-  recog.onend    = stopMic;
-  btn.addEventListener('click', () => {
-    if (btn.classList.contains('on')) { recog.stop(); return; }
-    try { recog.start(); } catch(e) { return; }
-    btn.classList.add('on');
-    document.getElementById('micLabel').textContent = 'Listening…';
-  });
-}
-function stopMic() {
-  document.getElementById('micBtn').classList.remove('on');
-  document.getElementById('micLabel').textContent = 'Voice Input';
-}
-function parseVoice(t) {
-  const low = t.toLowerCase();
-  const vi = VENUES.findIndex(v => v.name.toLowerCase().split(' ').some(p => p.length > 3 && low.includes(p)));
-  if (vi >= 0) { document.getElementById('venueSelect').value = vi; onVenue(); }
-  const nm = low.match(/(?:event(?:\s+(?:is|name\s+is))?|called|named)\s+([a-z][^,.\n]+?)(?:\s+(?:on|at|date|description|specials?)|$)/i);
-  if (nm) setVal('eventName', tc(nm[1].trim()));
-  const days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
-  const di = days.findIndex(d => low.includes(d));
-  if (di >= 0) {
-    const now = new Date(); let diff = di - now.getDay(); if (diff<=0) diff+=7;
-    const t2 = new Date(now); t2.setDate(now.getDate()+diff);
-    document.getElementById('eventDate').value = `${t2.getFullYear()}-${pad(t2.getMonth()+1)}-${pad(t2.getDate())}`;
-  }
-  const dm = low.match(/description\s+(?:is\s+)?(.+?)(?:\s+specials?|$)/i);
-  if (dm) setVal('description', tc(dm[1].trim()));
-  const sm = low.match(/specials?\s+(?:are\s+|is\s+)?(.+?)(?:\s+description|$)/i);
-  if (sm) setVal('specials', tc(sm[1].trim()));
-  onChange();
-}
-function setVal(id, v) { if (v) document.getElementById(id).value = v; }
-function tc(s) { return s.replace(/\b\w/g, c => c.toUpperCase()); }
 
 init();
 </script>
