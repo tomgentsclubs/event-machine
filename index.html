@@ -362,6 +362,7 @@ input[type=date],input[type=time]{color-scheme:dark}
 .h-badge.published{background:#0a200a;color:#4caf50;border:1px solid #143514}
 .h-meta{font-size:.67rem;color:#2e2e2e;margin-bottom:12px}
 .h-actions{display:flex;gap:7px}
+.h-post-status:not(:empty){margin-top:8px}
 .h-btn{
   flex:1;padding:7px 10px;font-size:.68rem;font-weight:700;letter-spacing:.2px;
   font-family:inherit;border-radius:6px;cursor:pointer;transition:all .18s;
@@ -785,7 +786,8 @@ async function publishNow(histId) {
   const pubBtn = fromHistory
     ? document.querySelector(`[data-pub="${histId}"]`)
     : document.getElementById('publishBtn');
-  const pubLbl = fromHistory ? null : document.getElementById('publishLabel');
+  const pubLbl    = fromHistory ? null : document.getElementById('publishLabel');
+  const cardStatus = fromHistory ? document.getElementById('hps-' + histId) : null;
 
   if (!fromHistory) {
     document.getElementById('saveBtn').disabled    = true;
@@ -794,8 +796,10 @@ async function publishNow(histId) {
   }
   if (pubBtn) { pubBtn.disabled = true; if (!pubLbl) pubBtn.textContent = 'Posting…'; }
   if (pubLbl) pubLbl.textContent = 'Posting…';
+  if (cardStatus) cardStatus.innerHTML = '<div class="status-item" style="color:#888;background:#111;border:1px solid #222">Posting…</div>';
 
-  const ok = await doPost(d, fromHistory ? null : document.getElementById('postStatus'));
+  const statusEl = fromHistory ? cardStatus : document.getElementById('postStatus');
+  const ok = await doPost(d, statusEl);
 
   if (ok) {
     entry.status     = 'published';
@@ -852,10 +856,12 @@ async function doPost(d, statusEl) {
         lines.push(`<div class="status-item s-ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>${esc(wh.label)}</div>`);
       } else {
         allOk = false;
+        console.error('doPost HTTP error:', wh.label, r.status, wh.url);
         lines.push(`<div class="status-item s-err"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>${esc(wh.label)}: HTTP ${r.status}</div>`);
       }
     } catch(e) {
       allOk = false;
+      console.error('doPost fetch error:', wh.label, e);
       lines.push(`<div class="status-item s-err"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>${esc(wh.label)}: ${esc(e.message)}</div>`);
     }
   }
@@ -1094,6 +1100,7 @@ function renderHistory() {
         <button class="h-btn h-pub" data-pub="${e.id}" onclick="publishNow('${e.id}')">${e.status === 'published' || (e.postCount && e.postCount > 0) ? 'Publish Again' : 'Publish Now'}</button>
         <button class="h-btn h-del" onclick="deleteFromHistory('${e.id}')">Delete</button>
       </div>
+      <div class="h-post-status" id="hps-${e.id}"></div>
     </div>`;
   }
 
