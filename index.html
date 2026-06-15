@@ -554,17 +554,17 @@ input[type=date],input[type=time]{color-scheme:dark}
 
 <script>
 const VENUES = [
-  {name:"Maggie Mays Pattaya",location:"Soi Chaiyapoon",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/4b2xcC7xzssmKenZ7",webhook:"WEBHOOK_MAGGIE_MAYS_PATTAYA",logoUrl:"assets/logos/Maggie-Mays-Pattaya-Logo-V2-Transparent.png",color:"#808080"},
-  {name:"Club Fate",location:"Soi Boomerang",hours:"6pm to 4am",mapsUrl:"https://maps.app.goo.gl/HsPebqEwHjeWZ5Jr7",webhook:"WEBHOOK_CLUB_FATE",logoUrl:"assets/logos/Club-Fate-Transparent-2.png",color:"#9b3fcf"},
-  {name:"The Camel Toe",location:"Soi Kophai 10",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/BtykkvmZsxS8K5bz9",webhook:"WEBHOOK_THE_CAMEL_TOE",logoUrl:"assets/logos/Camel-Toe-Logo.png",color:"#FFD700"},
-  {name:"Catflaps",location:"Pratumnak",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/e6j8bsarfnvay9HN8",webhook:"WEBHOOK_CATFLAPS",logoUrl:"assets/logos/Cat-Flaps-Logo-New.png",color:"#f0f0f0"},
-  {name:"Maggie Mays Jomtien",location:"Thappraya Road",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/bdoj7VcbnXdkHYC27",webhook:"WEBHOOK_MAGGIE_MAYS_JOMTIEN",logoUrl:"assets/logos/Maggie-Mays-Jomtien-Logo-V2-Transparent.png",color:"#89CFF0"},
-  {name:"Free Willy",location:"Soi Regional Land",hours:"2pm to 1am",mapsUrl:"https://maps.app.goo.gl/1rMtajCmAyv6mdb99",webhook:"WEBHOOK_FREE_WILLY",logoUrl:"assets/logos/Free-Willy-Transparent-Logo.png",color:"#1a3a8c"},
-  {name:"Maggie Mays Darkside",location:"Khao Talo 9",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/NFo1vy6GNZz88NeC8",webhook:"WEBHOOK_MAGGIE_MAYS_DARKSIDE",logoUrl:"assets/logos/Maggie-Mays-Darkside-Logo-V2-Transparent.png",color:"#c8860a"},
-  {name:"Maggie Mays Resort",location:"Jomtien",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/f8k14qnDGdCs2qfp7",webhook:"WEBHOOK_MAGGIE_MAYS_RESORT",logoUrl:"assets/logos/Maggie-Mays-Resort-2.png",color:"#00BFFF"},
-  {name:"Bradleys",location:"Soi Chaiyapoon",hours:"3pm to Midnight",mapsUrl:"https://maps.app.goo.gl/SdqfFhwfxUHgYPa58",webhook:"WEBHOOK_BRADLEYS",logoUrl:"assets/logos/Bradleys.png",color:"#111111"},
-  {name:"The Brass House",location:"Soi Boonkanchana",hours:"2pm to Midnight",mapsUrl:"https://maps.app.goo.gl/J8DoUQdNZJUqVJru7",webhook:"WEBHOOK_THE_BRASS_HOUSE",logoUrl:"assets/logos/Brass-House.png",color:"#8B0000"},
-  {name:"Maggie Mays Beer Bar",location:"Soi Made in Thailand",hours:"6pm to 4am",mapsUrl:"https://maps.app.goo.gl/eWf5Fm2iUTp1gmDd6",webhook:"WEBHOOK_MAGGIE_MAYS_BEER_BAR",logoUrl:"assets/logos/Maggie-Mays-Beer-Bar.png",color:"#c8a951"},
+  {name:"Maggie Mays Pattaya",location:"Soi Chaiyapoon",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/4b2xcC7xzssmKenZ7",webhook:"WEBHOOK_MAGGIE_MAYS_PATTAYA",logoUrl:"assets/logos/Maggie-Mays-Pattaya-Logo-V2-Transparent.png",logoSmall:"assets/logos/small/Maggie-Mays-Pattaya-Logo-V2-Transparent.webp",color:"#808080"},
+  {name:"Club Fate",location:"Soi Boomerang",hours:"6pm to 4am",mapsUrl:"https://maps.app.goo.gl/HsPebqEwHjeWZ5Jr7",webhook:"WEBHOOK_CLUB_FATE",logoUrl:"assets/logos/Club-Fate-Transparent-2.png",logoSmall:"assets/logos/small/Club-Fate-Transparent-2.webp",color:"#9b3fcf"},
+  {name:"The Camel Toe",location:"Soi Kophai 10",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/BtykkvmZsxS8K5bz9",webhook:"WEBHOOK_THE_CAMEL_TOE",logoUrl:"assets/logos/Camel-Toe-Logo.png",logoSmall:"assets/logos/small/Camel-Toe-Logo.webp",color:"#FFD700"},
+  {name:"Catflaps",location:"Pratumnak",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/e6j8bsarfnvay9HN8",webhook:"WEBHOOK_CATFLAPS",logoUrl:"assets/logos/Cat-Flaps-Logo-New.png",logoSmall:"assets/logos/small/Cat-Flaps-Logo-New.webp",color:"#f0f0f0"},
+  {name:"Maggie Mays Jomtien",location:"Thappraya Road",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/bdoj7VcbnXdkHYC27",webhook:"WEBHOOK_MAGGIE_MAYS_JOMTIEN",logoUrl:"assets/logos/Maggie-Mays-Jomtien-Logo-V2-Transparent.png",logoSmall:"assets/logos/small/Maggie-Mays-Jomtien-Logo-V2-Transparent.webp",color:"#89CFF0"},
+  {name:"Free Willy",location:"Soi Regional Land",hours:"2pm to 1am",mapsUrl:"https://maps.app.goo.gl/1rMtajCmAyv6mdb99",webhook:"WEBHOOK_FREE_WILLY",logoUrl:"assets/logos/Free-Willy-Transparent-Logo.png",logoSmall:"assets/logos/small/Free-Willy-Transparent-Logo.webp",color:"#1a3a8c"},
+  {name:"Maggie Mays Darkside",location:"Khao Talo 9",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/NFo1vy6GNZz88NeC8",webhook:"WEBHOOK_MAGGIE_MAYS_DARKSIDE",logoUrl:"assets/logos/Maggie-Mays-Darkside-Logo-V2-Transparent.png",logoSmall:"assets/logos/small/Maggie-Mays-Darkside-Logo-V2-Transparent.webp",color:"#c8860a"},
+  {name:"Maggie Mays Resort",location:"Jomtien",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/f8k14qnDGdCs2qfp7",webhook:"WEBHOOK_MAGGIE_MAYS_RESORT",logoUrl:"assets/logos/Maggie-Mays-Resort-2.png",logoSmall:"assets/logos/small/Maggie-Mays-Resort-2.webp",color:"#00BFFF"},
+  {name:"Bradleys",location:"Soi Chaiyapoon",hours:"3pm to Midnight",mapsUrl:"https://maps.app.goo.gl/SdqfFhwfxUHgYPa58",webhook:"WEBHOOK_BRADLEYS",logoUrl:"assets/logos/Bradleys.png",logoSmall:"assets/logos/small/Bradleys.webp",color:"#111111"},
+  {name:"The Brass House",location:"Soi Boonkanchana",hours:"2pm to Midnight",mapsUrl:"https://maps.app.goo.gl/J8DoUQdNZJUqVJru7",webhook:"WEBHOOK_THE_BRASS_HOUSE",logoUrl:"assets/logos/Brass-House.png",logoSmall:"assets/logos/small/Brass-House.webp",color:"#8B0000"},
+  {name:"Maggie Mays Beer Bar",location:"Soi Made in Thailand",hours:"6pm to 4am",mapsUrl:"https://maps.app.goo.gl/eWf5Fm2iUTp1gmDd6",webhook:"WEBHOOK_MAGGIE_MAYS_BEER_BAR",logoUrl:"assets/logos/Maggie-Mays-Beer-Bar.png",logoSmall:"assets/logos/small/Maggie-Mays-Beer-Bar.webp",color:"#c8a951"},
 ];
 const GENERAL = "WEBHOOK_GENERAL";
 
@@ -720,7 +720,7 @@ function renderPreview(d) {
 
   // Author
   h += `<div class="d-author">`;
-  if (d.venue.logoUrl) h += `<img class="d-author-img" src="${esc(d.venue.logoUrl)}" alt="" onerror="this.style.display='none'">`;
+  if (d.venue.logoSmall) h += `<img class="d-author-img" src="${esc(d.venue.logoSmall)}" alt="" onerror="this.style.display='none'">`;
   h += `<span class="d-author-name">${esc(d.venue.name)}</span></div>`;
 
   // Title
@@ -747,7 +747,7 @@ function renderPreview(d) {
 
   // Footer
   h += `<div class="d-footer">`;
-  if (d.venue.logoUrl) h += `<img class="d-footer-img" src="${esc(d.venue.logoUrl)}" alt="" onerror="this.style.display='none'">`;
+  if (d.venue.logoSmall) h += `<img class="d-footer-img" src="${esc(d.venue.logoSmall)}" alt="" onerror="this.style.display='none'">`;
   h += `<span class="d-footer-txt">Opening Hours: ${esc(d.venue.hours)} &nbsp;·&nbsp; GentsClubs.com Pattaya</span>`;
   h += `</div>`;
 
@@ -1113,13 +1113,13 @@ function renderVenueQuickTools() {
     return `<div class="vqt-card">
       <div class="vqt-card-inner" style="--vc:${esc(v.color)}">
         <div class="vqt-name-row">
-          <img class="vqt-logo" src="${esc(v.logoUrl)}" alt="" onerror="this.style.display='none'">
+          <img class="vqt-logo" src="${esc(v.logoSmall)}" alt="" onerror="this.style.display='none'">
           <span class="vqt-name">${esc(v.name)}</span>
         </div>
         <div class="vqt-btns">
           <button class="vqt-btn" onclick="vqtCopy(this,'${esc(v.mapsUrl)}')">Copy Maps URL</button>
           <button class="vqt-btn" onclick="vqtCopyImg(this,'${esc(localQr)}','Copy QR Image')">Copy QR Image</button>
-          <button class="vqt-btn" onclick="vqtCopyLogoImg(this,'${esc(v.logoUrl)}')">Copy Logo Image</button>
+          <button class="vqt-btn" data-full="${esc(v.logoUrl)}" onclick="vqtCopyLogoImg(this)">Copy Logo Image</button>
         </div>
       </div>
     </div>`;
@@ -1152,8 +1152,8 @@ async function vqtCopyImg(btn, path, label) {
 async function vqtCopyLogoImg(btn) {
   const label = 'Copy Logo Image';
   try {
-    // Step 1: get the logo path from the card and build an absolute URL
-    const relPath = btn.closest('.vqt-card-inner').querySelector('.vqt-logo').getAttribute('src');
+    // Step 1: read full-size logo path from data attribute and build absolute URL
+    const relPath = btn.dataset.full;
     const absUrl  = window.location.origin + '/' + relPath.replace(/^\//, '');
 
     // Step 2: load image using absolute URL, no crossOrigin (same-origin assets)
