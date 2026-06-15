@@ -1115,7 +1115,7 @@ function renderVenueQuickTools() {
         <div class="vqt-btns">
           <button class="vqt-btn" onclick="vqtCopy(this,'${esc(v.mapsUrl)}')">Copy Maps URL</button>
           <button class="vqt-btn" onclick="vqtCopyImg(this,'${esc(localQr)}','Copy QR Image')">Copy QR Image</button>
-          <button class="vqt-btn" onclick="vqtCopyImg(this,'${esc(v.logoUrl)}','Copy Logo Image')">Copy Logo Image</button>
+          <button class="vqt-btn" onclick="vqtCopyLogoImg(this,'${esc(v.logoUrl)}')">Copy Logo Image</button>
         </div>
       </div>
     </div>`;
@@ -1136,6 +1136,41 @@ async function vqtCopyImg(btn, path, label) {
     if (!res.ok) throw new Error('not found');
     const blob = await res.blob();
     await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = label; btn.classList.remove('copied'); }, 1500);
+  } catch(e) {
+    btn.textContent = 'Failed';
+    setTimeout(() => { btn.textContent = label; }, 1500);
+  }
+}
+
+async function vqtCopyLogoImg(btn) {
+  const label = 'Copy Logo Image';
+  try {
+    const path = btn.closest('.vqt-card-inner').querySelector('.vqt-logo').src;
+    const res = await fetch(path);
+    if (!res.ok) throw new Error('not found');
+    const srcBlob = await res.blob();
+
+    // Draw onto canvas with magenta background so anti-aliased edges blend to magenta
+    const img = await createImageBitmap(srcBlob);
+    const canvas = new OffscreenCanvas(img.width, img.height);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#FF00FF';
+    ctx.fillRect(0, 0, img.width, img.height);
+    ctx.drawImage(img, 0, 0);
+
+    // Chroma-key: zero alpha on near-magenta pixels
+    const idata = ctx.getImageData(0, 0, img.width, img.height);
+    const d = idata.data;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i] > 200 && d[i+1] < 50 && d[i+2] > 200) d[i+3] = 0;
+    }
+    ctx.putImageData(idata, 0, 0);
+
+    const pngBlob = await canvas.convertToBlob({type: 'image/png'});
+    await navigator.clipboard.write([new ClipboardItem({'image/png': pngBlob})]);
     btn.textContent = 'Copied!';
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = label; btn.classList.remove('copied'); }, 1500);
