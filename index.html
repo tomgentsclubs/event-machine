@@ -575,7 +575,7 @@ function init() {
   if (sessionStorage.getItem('em_auth')) {
     document.getElementById('pwGate').classList.add('hidden');
   } else {
-    document.getElementById('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkPw(); });
+    document.getElementById('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkPw(); }); // checkPw is async; fire-and-forget is fine here
   }
 
   const sel = document.getElementById('venueSelect');
@@ -1146,10 +1146,15 @@ async function vqtCopyImg(btn, path, label) {
 }
 
 // ── PASSWORD GATE ─────────────────────────────────────────────
-function checkPw() {
+const PW_HASH = '5aa44d12b1e7368c77f23deee13e7fe763b49331deea53afab311f132b90cc9d';
+
+async function checkPw() {
   const inp = document.getElementById('pwInput');
   const err = document.getElementById('pwErr');
-  if (inp.value === 'eve308772online#\\') {
+  const encoded = new TextEncoder().encode(inp.value);
+  const hashBuf = await crypto.subtle.digest('SHA-256', encoded);
+  const hash = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  if (hash === PW_HASH) {
     sessionStorage.setItem('em_auth', '1');
     document.getElementById('pwGate').classList.add('hidden');
   } else {
