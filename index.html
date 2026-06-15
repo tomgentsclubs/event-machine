@@ -371,6 +371,39 @@ input[type=date],input[type=time]{color-scheme:dark}
 .h-btn:disabled{opacity:.4;cursor:not-allowed}
 .h-del:hover{background:#1a0a0a !important;border-color:#3a1a1a !important;color:#e05555 !important}
 .h-pub:hover{border-color:var(--accent) !important;color:var(--accent) !important}
+.h-past{opacity:.5}
+.h-past-toggle{
+  margin-left:auto;
+  background:none;border:1px solid #1e1e1e;border-radius:6px;
+  color:#383838;font-size:.62rem;font-weight:700;font-family:inherit;
+  padding:4px 10px;cursor:pointer;transition:all .18s;letter-spacing:.2px;
+}
+.h-past-toggle:hover{border-color:#2e2e2e;color:#666}
+
+/* ── VENUE QUICK TOOLS ── */
+.vqt-wrap{max-width:1280px;margin:0 auto;padding:0 28px 60px}
+.vqt-header{
+  display:flex;align-items:center;gap:12px;
+  padding:18px 0 14px;border-top:1px solid #141414;
+}
+.vqt-title{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#303030}
+.vqt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.vqt-card{
+  background:#090909;border:1px solid #181818;border-radius:10px;
+  overflow:hidden;display:flex;flex-direction:column;
+}
+.vqt-card-inner{padding:14px 14px 12px;flex:1;display:flex;flex-direction:column;gap:10px;border-left:3px solid var(--vc)}
+.vqt-name-row{display:flex;align-items:center;gap:8px}
+.vqt-logo{height:24px;width:auto;object-fit:contain;flex-shrink:0}
+.vqt-name{font-size:.78rem;font-weight:700;color:#bbb}
+.vqt-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.vqt-btn{
+  padding:6px 8px;font-size:.65rem;font-weight:700;letter-spacing:.2px;
+  font-family:inherit;border-radius:6px;cursor:pointer;transition:all .18s;
+  border:1px solid #1e1e1e;background:#0d0d0d;color:#484848;
+}
+.vqt-btn:hover{background:#131313;border-color:#2e2e2e;color:#aaa}
+.vqt-btn.copied{background:#0a1a0a;border-color:#143514;color:#4caf50}
 </style>
 </head>
 <body>
@@ -507,23 +540,31 @@ input[type=date],input[type=time]{color-scheme:dark}
   <div class="history-header">
     <div class="history-title">Event History</div>
     <div class="history-count" id="historyCount">0 events</div>
+    <button class="h-past-toggle" id="pastToggle" onclick="togglePastEvents()">View Past Events</button>
   </div>
   <div id="historyList"><div class="history-empty">No saved events yet.</div></div>
 </div>
 
+<div class="vqt-wrap">
+  <div class="vqt-header">
+    <div class="vqt-title">Venue Quick Tools</div>
+  </div>
+  <div class="vqt-grid" id="vqtGrid"></div>
+</div>
+
 <script>
 const VENUES = [
-  {name:"Maggie Mays Pattaya",location:"Soi Chaiyapoon",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/4b2xcC7xzssmKenZ7",webhook:"WEBHOOK_MAGGIE_MAYS_PATTAYA",logoUrl:"https://www.dropbox.com/scl/fi/cyeufmgfp4wxn8qydq8j2/Maggie-Mays-Pattaya-Logo-V2-Transparent.png?rlkey=vf653javqu7s0iwgtb1sfvmgc&raw=1",color:"#c8a951"},
-  {name:"Maggie Mays Jomtien",location:"Thappraya Road",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/bdoj7VcbnXdkHYC27",webhook:"WEBHOOK_MAGGIE_MAYS_JOMTIEN",logoUrl:"https://www.dropbox.com/scl/fi/jco1gch7vrvgoo7upf2k7/Maggie-Mays-Jomtien-Logo-V2-Transparent.png?rlkey=ay3kgbszx79xsuwv8rvlav5uz&raw=1",color:"#c8a951"},
-  {name:"Maggie Mays Darkside",location:"Khao Talo 9",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/NFo1vy6GNZz88NeC8",webhook:"WEBHOOK_MAGGIE_MAYS_DARKSIDE",logoUrl:"https://www.dropbox.com/scl/fi/4mcjbtxfk6gd9yf06e7ey/Maggie-Mays-Darkside-Logo-V2-Transparent.png?rlkey=2qcbhkkwxjdhk8f47dz5pkuhd&raw=1",color:"#c8a951"},
-  {name:"Maggie Mays Resort",location:"Jomtien",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/f8k14qnDGdCs2qfp7",webhook:"WEBHOOK_MAGGIE_MAYS_RESORT",logoUrl:"https://www.dropbox.com/scl/fi/4b4xbecr2aquc6xmqp9of/Maggie-May-Resort-Logo-Transparent.png?rlkey=c2ml87uae4ntl4z680disk95l&raw=1",color:"#c8a951"},
-  {name:"Maggie Mays Beer Bar",location:"Soi Made in Thailand",hours:"6pm to 4am",mapsUrl:"https://maps.app.goo.gl/eWf5Fm2iUTp1gmDd6",webhook:"WEBHOOK_MAGGIE_MAYS_BEER_BAR",logoUrl:"https://www.dropbox.com/scl/fi/j6o0jajv0oy06teglnxe0/Maggie-Mays-Beer-Bar.png?rlkey=1t2b569glhganihvwro5wu2pl&raw=1",color:"#c8a951"},
+  {name:"Maggie Mays Pattaya",location:"Soi Chaiyapoon",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/4b2xcC7xzssmKenZ7",webhook:"WEBHOOK_MAGGIE_MAYS_PATTAYA",logoUrl:"https://www.dropbox.com/scl/fi/cyeufmgfp4wxn8qydq8j2/Maggie-Mays-Pattaya-Logo-V2-Transparent.png?rlkey=vf653javqu7s0iwgtb1sfvmgc&raw=1",color:"#808080"},
   {name:"Club Fate",location:"Soi Boomerang",hours:"6pm to 4am",mapsUrl:"https://maps.app.goo.gl/HsPebqEwHjeWZ5Jr7",webhook:"WEBHOOK_CLUB_FATE",logoUrl:"https://www.dropbox.com/scl/fi/2xfs8niouzjj98n450wng/Club-Fate-Transparent-2.png?rlkey=xc89rd74komx221vu5tt39iu2&raw=1",color:"#9b3fcf"},
-  {name:"Catflaps",location:"Pratumnak",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/e6j8bsarfnvay9HN8",webhook:"WEBHOOK_CATFLAPS",logoUrl:"https://www.dropbox.com/scl/fi/nymjgfkjtaa4qbnhg70vx/Cat-Flaps-Logo-New.png?rlkey=z6363zz7jjx7do6393coeiw0v&raw=1",color:"#e8462a"},
-  {name:"The Camel Toe",location:"Soi Kophai 10",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/BtykkvmZsxS8K5bz9",webhook:"WEBHOOK_THE_CAMEL_TOE",logoUrl:"https://www.dropbox.com/scl/fi/lp2yyde993lu79gbj2v9n/Camel-Toe-Logo.png?rlkey=af0s7gr1cl0eg8m2kk06lhffw&raw=1",color:"#d4a030"},
-  {name:"Free Willy",location:"Soi Regional Land",hours:"2pm to 1am",mapsUrl:"https://maps.app.goo.gl/1rMtajCmAyv6mdb99",webhook:"WEBHOOK_FREE_WILLY",logoUrl:"https://www.dropbox.com/scl/fi/ow7bps3if9vs029qmssnj/Free-Willy-Transparent-Logo.png?rlkey=6vsba6348wnkc3l64ero4i30i&raw=1",color:"#1a8fc1"},
-  {name:"Bradleys",location:"Soi Chaiyapoon",hours:"3pm to Midnight",mapsUrl:"https://maps.app.goo.gl/SdqfFhwfxUHgYPa58",webhook:"WEBHOOK_BRADLEYS",logoUrl:"https://www.dropbox.com/scl/fi/ai5862bmz3jttdyco8dug/Bradleys.png?rlkey=dsjuvj287mtv2v16d2d62jome&raw=1",color:"#2e86de"},
-  {name:"The Brass House",location:"Soi Boonkanchana",hours:"2pm to Midnight",mapsUrl:"https://maps.app.goo.gl/J8DoUQdNZJUqVJru7",webhook:"WEBHOOK_THE_BRASS_HOUSE",logoUrl:"https://www.dropbox.com/scl/fi/18vsvfu8nkdtk2i5eeqeb/Brass-House.png?rlkey=ti1gys82ghdsrcb5yl764njp4&raw=1",color:"#b8860b"}
+  {name:"The Camel Toe",location:"Soi Kophai 10",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/BtykkvmZsxS8K5bz9",webhook:"WEBHOOK_THE_CAMEL_TOE",logoUrl:"https://www.dropbox.com/scl/fi/lp2yyde993lu79gbj2v9n/Camel-Toe-Logo.png?rlkey=af0s7gr1cl0eg8m2kk06lhffw&raw=1",color:"#FFD700"},
+  {name:"Catflaps",location:"Pratumnak",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/e6j8bsarfnvay9HN8",webhook:"WEBHOOK_CATFLAPS",logoUrl:"https://www.dropbox.com/scl/fi/nymjgfkjtaa4qbnhg70vx/Cat-Flaps-Logo-New.png?rlkey=z6363zz7jjx7do6393coeiw0v&raw=1",color:"#f0f0f0"},
+  {name:"Maggie Mays Jomtien",location:"Thappraya Road",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/bdoj7VcbnXdkHYC27",webhook:"WEBHOOK_MAGGIE_MAYS_JOMTIEN",logoUrl:"https://www.dropbox.com/scl/fi/jco1gch7vrvgoo7upf2k7/Maggie-Mays-Jomtien-Logo-V2-Transparent.png?rlkey=ay3kgbszx79xsuwv8rvlav5uz&raw=1",color:"#89CFF0"},
+  {name:"Free Willy",location:"Soi Regional Land",hours:"2pm to 1am",mapsUrl:"https://maps.app.goo.gl/1rMtajCmAyv6mdb99",webhook:"WEBHOOK_FREE_WILLY",logoUrl:"https://www.dropbox.com/scl/fi/ow7bps3if9vs029qmssnj/Free-Willy-Transparent-Logo.png?rlkey=6vsba6348wnkc3l64ero4i30i&raw=1",color:"#1a3a8c"},
+  {name:"Maggie Mays Darkside",location:"Khao Talo 9",hours:"1pm to 11pm",mapsUrl:"https://maps.app.goo.gl/NFo1vy6GNZz88NeC8",webhook:"WEBHOOK_MAGGIE_MAYS_DARKSIDE",logoUrl:"https://www.dropbox.com/scl/fi/4mcjbtxfk6gd9yf06e7ey/Maggie-Mays-Darkside-Logo-V2-Transparent.png?rlkey=2qcbhkkwxjdhk8f47dz5pkuhd&raw=1",color:"#c8860a"},
+  {name:"Maggie Mays Resort",location:"Jomtien",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/f8k14qnDGdCs2qfp7",webhook:"WEBHOOK_MAGGIE_MAYS_RESORT",logoUrl:"https://www.dropbox.com/scl/fi/4b4xbecr2aquc6xmqp9of/Maggie-May-Resort-Logo-Transparent.png?rlkey=c2ml87uae4ntl4z680disk95l&raw=1",color:"#00BFFF"},
+  {name:"Bradleys",location:"Soi Chaiyapoon",hours:"3pm to Midnight",mapsUrl:"https://maps.app.goo.gl/SdqfFhwfxUHgYPa58",webhook:"WEBHOOK_BRADLEYS",logoUrl:"https://www.dropbox.com/scl/fi/ai5862bmz3jttdyco8dug/Bradleys.png?rlkey=dsjuvj287mtv2v16d2d62jome&raw=1",color:"#111111"},
+  {name:"The Brass House",location:"Soi Boonkanchana",hours:"2pm to Midnight",mapsUrl:"https://maps.app.goo.gl/J8DoUQdNZJUqVJru7",webhook:"WEBHOOK_THE_BRASS_HOUSE",logoUrl:"https://www.dropbox.com/scl/fi/18vsvfu8nkdtk2i5eeqeb/Brass-House.png?rlkey=ti1gys82ghdsrcb5yl764njp4&raw=1",color:"#8B0000"},
+  {name:"Maggie Mays Beer Bar",location:"Soi Made in Thailand",hours:"6pm to 4am",mapsUrl:"https://maps.app.goo.gl/eWf5Fm2iUTp1gmDd6",webhook:"WEBHOOK_MAGGIE_MAYS_BEER_BAR",logoUrl:"https://www.dropbox.com/scl/fi/j6o0jajv0oy06teglnxe0/Maggie-Mays-Beer-Bar.png?rlkey=1t2b569glhganihvwro5wu2pl&raw=1",color:"#c8a951"},
 ];
 const GENERAL = "WEBHOOK_GENERAL";
 
@@ -554,6 +595,7 @@ function init() {
   document.getElementById('venueSelect').addEventListener('change', onVenue);
   initMic();
   renderHistory();
+  renderVenueQuickTools();
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
@@ -1003,19 +1045,36 @@ function fmtTs(iso) {
     ' at ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
 }
 
+function venueSlug(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+let showPastEvents = false;
+
+function togglePastEvents() {
+  showPastEvents = !showPastEvents;
+  document.getElementById('pastToggle').textContent = showPastEvents ? 'Hide Past Events' : 'View Past Events';
+  renderHistory();
+}
+
 function renderHistory() {
   const all = getHistory();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const upcoming = all.filter(e => !e.date || new Date(e.date) >= today);
+  const past     = all.filter(e =>  e.date && new Date(e.date) <  today);
+
   document.getElementById('historyCount').textContent = `${all.length} event${all.length !== 1 ? 's' : ''}`;
   const listEl = document.getElementById('historyList');
   if (!all.length) {
     listEl.innerHTML = '<div class="history-empty">No saved events yet.</div>';
     return;
   }
-  listEl.innerHTML = `<div class="history-grid">${all.map(e => {
+
+  function cardHtml(e, dim) {
     const meta = e.status === 'published'
       ? `Posted ${e.postCount} time${e.postCount !== 1 ? 's' : ''}${e.lastPosted ? ' · Last ' + fmtTs(e.lastPosted) : ''}`
       : `Saved ${fmtTs(e.savedAt)}`;
-    return `<div class="h-card">
+    return `<div class="h-card${dim ? ' h-past' : ''}">
       <div class="h-card-top">
         <div class="h-card-info">
           <div class="h-venue">${esc(e.venueName)}</div>
@@ -1031,7 +1090,62 @@ function renderHistory() {
         <button class="h-btn h-del" onclick="deleteFromHistory('${e.id}')">Delete</button>
       </div>
     </div>`;
-  }).join('')}</div>`;
+  }
+
+  const shown = [
+    ...upcoming.map(e => cardHtml(e, false)),
+    ...(showPastEvents ? past.map(e => cardHtml(e, true)) : []),
+  ];
+  listEl.innerHTML = shown.length
+    ? `<div class="history-grid">${shown.join('')}</div>`
+    : '<div class="history-empty">No upcoming events.</div>';
+}
+
+function renderVenueQuickTools() {
+  const grid = document.getElementById('vqtGrid');
+  grid.innerHTML = VENUES.map(v => {
+    const slug = venueSlug(v.name);
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(v.mapsUrl)}`;
+    const localQr = `assets/qr/${slug}.png`;
+    return `<div class="vqt-card">
+      <div class="vqt-card-inner" style="--vc:${esc(v.color)}">
+        <div class="vqt-name-row">
+          <img class="vqt-logo" src="${esc(v.logoUrl)}" alt="" onerror="this.style.display='none'">
+          <span class="vqt-name">${esc(v.name)}</span>
+        </div>
+        <div class="vqt-btns">
+          <button class="vqt-btn" onclick="vqtCopy(this,'${esc(v.mapsUrl)}')">Copy Maps URL</button>
+          <button class="vqt-btn" onclick="vqtCopy(this,'${esc(qrUrl)}')">Copy QR URL</button>
+          <button class="vqt-btn" onclick="window.open('${esc(v.logoUrl)}','_blank')">Open Logo</button>
+          <button class="vqt-btn" onclick="vqtCopyQrImage(this,'${esc(localQr)}')">Copy QR Image</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function vqtCopy(btn, text) {
+  await navigator.clipboard.writeText(text);
+  const orig = btn.textContent;
+  btn.textContent = 'Copied!';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
+}
+
+async function vqtCopyQrImage(btn, path) {
+  try {
+    const res = await fetch(path);
+    if (!res.ok) throw new Error('not found');
+    const blob = await res.blob();
+    await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
+  } catch(e) {
+    btn.textContent = 'Failed';
+    setTimeout(() => { btn.textContent = 'Copy QR Image'; }, 1500);
+  }
 }
 
 // ── PASSWORD GATE ─────────────────────────────────────────────
