@@ -1152,28 +1152,29 @@ async function vqtCopyImg(btn, path, label) {
 async function vqtCopyLogoImg(btn) {
   const label = 'Copy Logo Image';
   try {
-    // Step 1: get the logo src from the card
-    const path = btn.closest('.vqt-card-inner').querySelector('.vqt-logo').src;
+    // Step 1: get the logo path from the card and build an absolute URL
+    const relPath = btn.closest('.vqt-card-inner').querySelector('.vqt-logo').getAttribute('src');
+    const absUrl  = window.location.origin + '/' + relPath.replace(/^\//, '');
 
-    // Step 2: load image with crossOrigin so getImageData is allowed
+    // Step 2: load image using absolute URL, no crossOrigin (same-origin assets)
     const img = await new Promise((resolve, reject) => {
       const el = new Image();
-      el.crossOrigin = 'anonymous';
       el.onload  = () => resolve(el);
-      el.onerror = () => reject(new Error('image load failed'));
-      el.src = path;
+      el.onerror = () => reject(new Error('image load failed: ' + absUrl));
+      el.src = absUrl;
     });
 
-    // Step 3: create canvas and fill ENTIRE surface with solid magenta first
+    // Step 3: create canvas and fill ENTIRE surface with solid green first
     const canvas = document.createElement('canvas');
     canvas.width  = img.naturalWidth  || img.width;
     canvas.height = img.naturalHeight || img.height;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#FF00FF';
+    ctx.fillStyle = '#00FF00';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Step 4: draw image on top of magenta background
+    // Step 4: draw image on top of green background
     ctx.drawImage(img, 0, 0);
+    console.log('Logo canvas:', canvas.width, 'x', canvas.height, '| image natural:', img.naturalWidth, 'x', img.naturalHeight);
 
     // Step 5: read all pixel data
     const idata = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -1186,12 +1187,12 @@ async function vqtCopyLogoImg(btn) {
     }
     console.log('Logo canvas first 20 pixels [R,G,B,A]:', preview.join(' '));
 
-    // Step 7: chroma-key — remove near-magenta pixels
+    // Step 7: chroma-key — remove near-green pixels (avoids keying purple logos)
     // Step 8: also remove near-black pixels (transparency flattened to black)
     for (let i = 0; i < d.length; i += 4) {
       const r = d[i], g = d[i+1], b = d[i+2];
-      if (r > 180 && g < 80 && b > 180) { d[i+3] = 0; continue; }
-      if (r < 15  && g < 15 && b < 15)  { d[i+3] = 0; }
+      if (r < 80 && g > 180 && b < 80) { d[i+3] = 0; continue; }
+      if (r < 15 && g < 15  && b < 15) { d[i+3] = 0; }
     }
 
     // Step 9: write back and export
