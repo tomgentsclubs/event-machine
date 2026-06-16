@@ -12,16 +12,26 @@ const VENUE_WEBHOOK_ENV = {
   "Maggie Mays Beer Bar":  "WEBHOOK_MAGGIE_MAYS_BEER_BAR",
 };
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin":  "https://tomgentsclubs.github.io",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
+const ALLOWED_ORIGINS = [
+  "https://tomgentsclubs.github.io",
+  "https://event-machine.pattayapilot.com",
+];
 
-function json(data, status = 200) {
+function corsHeaders(origin) {
+  const headers = {
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    headers["Access-Control-Allow-Origin"] = origin;
+  }
+  return headers;
+}
+
+function json(data, status, headers) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+    headers: { "Content-Type": "application/json", ...headers },
   });
 }
 
@@ -42,35 +52,37 @@ async function postToDiscord(label, url, body) {
 
 export default {
   async fetch(request, env) {
+    const headers = corsHeaders(request.headers.get("Origin") || "");
+
     if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: CORS_HEADERS });
+      return new Response(null, { status: 204, headers });
     }
     if (request.method !== "POST") {
-      return json({ ok: false, error: "Method not allowed" }, 405);
+      return json({ ok: false, error: "Method not allowed" }, 405, headers);
     }
 
     let payload;
     try {
       payload = await request.json();
     } catch (e) {
-      return json({ ok: false, error: "Invalid JSON body" }, 400);
+      return json({ ok: false, error: "Invalid JSON body" }, 400, headers);
     }
 
     const { venueName, embed, channels } = payload || {};
     if (!venueName || !embed) {
-      return json({ ok: false, error: "venueName and embed are required" }, 400);
+      return json({ ok: false, error: "venueName and embed are required" }, 400, headers);
     }
 
     const envKey = VENUE_WEBHOOK_ENV[venueName];
     const venueWebhookUrl = envKey ? env[envKey] : undefined;
     if (!venueWebhookUrl) {
-      return json({ ok: false, error: `Unknown venue: ${venueName}` }, 400);
+      return json({ ok: false, error: `Unknown venue: ${venueName}` }, 400, headers);
     }
 
     const wantVenue   = channels?.venue   !== false;
     const wantGeneral = channels?.general !== false;
     if (!wantVenue && !wantGeneral) {
-      return json({ ok: false, error: "No channels selected" }, 400);
+      return json({ ok: false, error: "No channels selected" }, 400, headers);
     }
 
     const body = JSON.stringify({ embeds: [embed] });
@@ -82,6 +94,6 @@ export default {
     const results = await Promise.all(tasks);
     const allOk = results.every(r => r.ok);
 
-    return json({ ok: allOk, results });
+    return json({ ok: allOk, results }, 200, headers);
   },
 };

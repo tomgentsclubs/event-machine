@@ -255,46 +255,6 @@ input[type=date],input[type=time]{color-scheme:dark}
   background:#0a200a;border:1px solid #143514;color:#4caf50;padding:2px 7px;border-radius:4px;
 }
 
-/* ── PASSWORD GATE ── */
-#pwGate{
-  position:fixed;inset:0;z-index:9999;
-  background:#030303;
-  display:flex;align-items:center;justify-content:center;
-}
-#pwGate.hidden{display:none}
-.pw-box{
-  background:#090909;border:1px solid #1e1e1e;border-radius:14px;
-  padding:36px 40px;width:320px;text-align:center;
-}
-.pw-logo{font-size:1.4rem;font-weight:900;color:#fff;letter-spacing:-.5px;margin-bottom:4px}
-.pw-logo em{font-style:normal;color:#888}
-.pw-sub{font-size:.65rem;color:#333;text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:28px}
-.pw-label{font-size:.62rem;font-weight:700;color:#333;text-transform:uppercase;letter-spacing:.7px;display:block;text-align:left;margin-bottom:6px}
-#pwInput{
-  width:100%;background:#0c0c0c;border:1px solid #252525;border-radius:8px;
-  color:#ccc;padding:11px 14px;font-size:.9rem;font-family:inherit;font-weight:500;
-  outline:none;margin-bottom:14px;text-align:center;letter-spacing:2px;
-  transition:border-color .2s,box-shadow .2s;
-}
-#pwInput:focus{border-color:#555;box-shadow:0 0 0 3px rgba(255,255,255,.05)}
-#pwInput.shake{animation:shake .38s ease}
-@keyframes shake{
-  0%,100%{transform:translateX(0)}
-  20%{transform:translateX(-9px)}
-  40%{transform:translateX(9px)}
-  60%{transform:translateX(-6px)}
-  80%{transform:translateX(6px)}
-}
-.pw-btn{
-  width:100%;padding:12px;background:#1a1a1a;border:1px solid #2a2a2a;
-  border-radius:8px;color:#ccc;font-family:inherit;font-size:.82rem;
-  font-weight:700;letter-spacing:.3px;cursor:pointer;transition:all .2s;
-}
-.pw-btn:hover{background:#222;border-color:#363636;color:#fff}
-.pw-btn:disabled{opacity:.4;cursor:not-allowed}
-#pwInput:disabled{opacity:.4;cursor:not-allowed}
-.pw-err{font-size:.72rem;color:#e05555;margin-top:10px;min-height:18px}
-
 /* ── SAVE / PUBLISH BUTTONS ── */
 .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .save-btn,.pub-btn{
@@ -401,17 +361,6 @@ input[type=date],input[type=time]{color-scheme:dark}
 </style>
 </head>
 <body>
-
-<div id="pwGate">
-  <div class="pw-box">
-    <div class="pw-logo">Event <em>Machine</em></div>
-    <div class="pw-sub">GentsClubs.com &nbsp;·&nbsp; Pattaya</div>
-    <label class="pw-label" for="pwInput">Password</label>
-    <input type="password" id="pwInput" placeholder="••••••••" autocomplete="current-password">
-    <button class="pw-btn" id="pwBtn" onclick="checkPw()">Enter</button>
-    <div class="pw-err" id="pwErr"></div>
-  </div>
-</div>
 
 <header>
   <div>
@@ -545,6 +494,17 @@ input[type=date],input[type=time]{color-scheme:dark}
 </div>
 
 <script>
+/*
+ * ── ARCHITECTURE ────────────────────────────────────────────
+ * Cloudflare Access in front of event-machine.pattayapilot.com handles
+ * all authentication before this page is ever served — there is no
+ * password gate in this file.
+ * Cloudflare Worker at event-machine-proxy.thailandfordy.workers.dev
+ * holds the real Discord webhook URLs and handles posting embeds.
+ * GitHub Pages hosts these static files (also reachable directly at
+ * tomgentsclubs.github.io/event-machine/, behind the same Access policy).
+ * No secrets or webhook URLs exist anywhere in this file.
+ */
 const BASE = window.location.pathname.replace(/\/[^/]*$/, '/');
 const VENUES = [
   {name:"Maggie Mays Pattaya",location:"Soi Chaiyapoon",hours:"1pm to Midnight",mapsUrl:"https://maps.app.goo.gl/4b2xcC7xzssmKenZ7",webhook:"",logoUrl:BASE+"assets/logos/Maggie-Mays-Pattaya-Logo-V2-Transparent.png",logoSmall:BASE+"assets/logos/small/Maggie-Mays-Pattaya-Logo-V2-Transparent.webp",color:"#808080"},
@@ -565,13 +525,6 @@ let posted = false;
 
 // ── INIT ──────────────────────────────────────────────────────
 function init() {
-  if (sessionStorage.getItem('em_auth')) {
-    document.getElementById('pwGate').classList.add('hidden');
-  } else {
-    document.getElementById('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkPw(); }); // checkPw is async; fire-and-forget is fine here
-    checkLockoutOnLoad();
-  }
-
   const sel = document.getElementById('venueSelect');
   VENUES.forEach((v, i) => {
     const o = document.createElement('option');
@@ -1171,91 +1124,6 @@ async function vqtCopyQr(btn, path) {
     setTimeout(() => { btn.textContent = 'Copy QR Image'; }, 1500);
   }
 }
-
-// ── PASSWORD GATE ─────────────────────────────────────────────
-const PW_HASH         = '5aa44d12b1e7368c77f23deee13e7fe763b49331deea53afab311f132b90cc9d';
-const PW_MAX_ATTEMPTS = 5;
-const PW_LOCKOUT_MS   = 5 * 60 * 1000;
-let pwLockoutTimer = null;
-
-function applyLockout() {
-  const inp = document.getElementById('pwInput');
-  const btn = document.getElementById('pwBtn');
-  const err = document.getElementById('pwErr');
-  inp.disabled = true;
-  btn.disabled = true;
-  if (pwLockoutTimer) clearInterval(pwLockoutTimer);
-
-  function tick() {
-    const remaining = Number(sessionStorage.getItem('em_lockout') || 0) - Date.now();
-    if (remaining <= 0) {
-      clearInterval(pwLockoutTimer);
-      pwLockoutTimer = null;
-      sessionStorage.removeItem('em_lockout');
-      sessionStorage.removeItem('em_attempts');
-      inp.disabled = false;
-      btn.disabled = false;
-      err.textContent = '';
-      return;
-    }
-    const mins = Math.floor(remaining / 60000);
-    const secs = Math.floor((remaining % 60000) / 1000);
-    err.textContent = `Too many attempts. Try again in ${mins}:${String(secs).padStart(2,'0')}...`;
-  }
-  tick();
-  pwLockoutTimer = setInterval(tick, 1000);
-}
-
-function checkLockoutOnLoad() {
-  const lockoutUntil = Number(sessionStorage.getItem('em_lockout') || 0);
-  if (lockoutUntil > Date.now()) applyLockout();
-}
-
-async function checkPw() {
-  const inp = document.getElementById('pwInput');
-  const err = document.getElementById('pwErr');
-
-  if (Number(sessionStorage.getItem('em_lockout') || 0) > Date.now()) return;
-
-  const encoded = new TextEncoder().encode(inp.value);
-  const hashBuf = await crypto.subtle.digest('SHA-256', encoded);
-  const hash = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2,'0')).join('');
-  if (hash === PW_HASH) {
-    sessionStorage.removeItem('em_attempts');
-    sessionStorage.removeItem('em_lockout');
-    sessionStorage.setItem('em_auth', '1');
-    document.getElementById('pwGate').classList.add('hidden');
-  } else {
-    const attempts = Number(sessionStorage.getItem('em_attempts') || 0) + 1;
-    sessionStorage.setItem('em_attempts', String(attempts));
-    if (attempts >= PW_MAX_ATTEMPTS) {
-      sessionStorage.setItem('em_lockout', String(Date.now() + PW_LOCKOUT_MS));
-      applyLockout();
-    } else {
-      err.textContent = 'Incorrect password.';
-      inp.classList.remove('shake');
-      void inp.offsetWidth;
-      inp.classList.add('shake');
-      inp.value = '';
-      inp.focus();
-    }
-  }
-}
-
-// ── VENUE VOICE GUIDE ─────────────────────────────────────────
-const VOICE = {
-  "Maggie Mays Pattaya":  "The original. Confident, naughty ladies who have been there and done it all. This is the go-to spot that needs no introduction. Write like an institution that doesn't need to try hard — because it doesn't.",
-  "Maggie Mays Jomtien":  "Big, bold and unmissable. If you are in Jomtien this is the only stop you need. Write with energy and total conviction — the biggest and best in Jomtien, full stop.",
-  "Maggie Mays Darkside": "No fuss, cold beers, great value, proper expat crowd. Unpretentious and proud of it. Write in a relaxed, straight-talking way — never flashy, never trying to be something it isn't.",
-  "Maggie Mays Resort":   "Huge pool, great cafe and a proper Gents Club onsite. No room needed — non-guests are always welcome. Always make it clear in the copy that outsiders are welcome, not just hotel guests.",
-  "Maggie Mays Beer Bar": "Late night sports and pool, central Pattaya, cold beer and big screens. Write in a lively, event-focused way that speaks to the late-night crowd who want a great atmosphere.",
-  "Club Fate":            "Late night nightclub energy, hype and bold attitude. The night does not start until you are here. Write like a hype man — big, loud, electric. Make people feel like they have no choice but to show up.",
-  "Catflaps":             "Flirty, playful, girly fun. The girls run the show here. Write in a cheeky, fun and spirited way with personality in every line.",
-  "The Camel Toe":        "Experienced ladies who know exactly what they are doing. Wink included. Lean into the MILF bar identity with a knowing, playful and confident tone.",
-  "Free Willy":           "Naughty, anything goes, leave your inhibitions at the door. Be a bit more daring than The Camel Toe. Cheeky, suggestive and unapologetic — no filters.",
-  "Bradleys":             "Sassy ladyboys, fun and fierce. Not your average night out. Write with sassy confidence and attitude — bold, fun and full of personality.",
-  "The Brass House":      "No holds barred. If you want it you will find it here. Write with bold, suggestive energy that hints anything goes. Direct, daring, no apologies."
-};
 
 // ── DROPBOX FIX ───────────────────────────────────────────────
 function fixDropbox() {
