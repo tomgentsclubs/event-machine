@@ -56,7 +56,7 @@ export default {
       return json({ ok: false, error: "Invalid JSON body" }, 400);
     }
 
-    const { venueName, embed } = payload || {};
+    const { venueName, embed, channels } = payload || {};
     if (!venueName || !embed) {
       return json({ ok: false, error: "venueName and embed are required" }, 400);
     }
@@ -67,14 +67,19 @@ export default {
       return json({ ok: false, error: `Unknown venue: ${venueName}` }, 400);
     }
 
+    const wantVenue   = channels?.venue   !== false;
+    const wantGeneral = channels?.general !== false;
+    if (!wantVenue && !wantGeneral) {
+      return json({ ok: false, error: "No channels selected" }, 400);
+    }
+
     const body = JSON.stringify({ embeds: [embed] });
 
-    const [venueResult, generalResult] = await Promise.all([
-      postToDiscord(venueName, venueWebhookUrl, body),
-      postToDiscord("General Channel", env.WEBHOOK_GENERAL, body),
-    ]);
+    const tasks = [];
+    if (wantVenue)   tasks.push(postToDiscord(venueName, venueWebhookUrl, body));
+    if (wantGeneral) tasks.push(postToDiscord("General Channel", env.WEBHOOK_GENERAL, body));
 
-    const results = [venueResult, generalResult];
+    const results = await Promise.all(tasks);
     const allOk = results.every(r => r.ok);
 
     return json({ ok: allOk, results });
