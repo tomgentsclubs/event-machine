@@ -17,9 +17,9 @@ const ALLOWED_ORIGINS = [
   "https://event-machine.pattayapilot.com",
 ];
 
-function corsHeaders(origin) {
+function corsHeaders(origin, methods = "POST, GET, OPTIONS") {
   const headers = {
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Methods": methods,
     "Access-Control-Allow-Headers": "Content-Type",
   };
   if (ALLOWED_ORIGINS.includes(origin)) {
@@ -50,9 +50,37 @@ async function postToDiscord(label, url, body) {
   }
 }
 
+const CALENDAR_URL = "https://tomgentsclubs.github.io/pattayapilot/api/v1/events/index.json";
+
 export default {
   async fetch(request, env) {
-    const headers = corsHeaders(request.headers.get("Origin") || "");
+    const origin = request.headers.get("Origin") || "";
+    const url = new URL(request.url);
+
+    if (url.pathname === "/calendar") {
+      const headers = corsHeaders(origin, "GET, OPTIONS");
+      if (request.method === "OPTIONS") {
+        return new Response(null, { status: 204, headers });
+      }
+      if (request.method !== "GET") {
+        return json({ ok: false, error: "Method not allowed" }, 405, headers);
+      }
+      try {
+        const r = await fetch(CALENDAR_URL);
+        if (!r.ok) {
+          return json({ ok: false, error: `Upstream HTTP ${r.status}` }, 502, headers);
+        }
+        const data = await r.text();
+        return new Response(data, {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...headers },
+        });
+      } catch (e) {
+        return json({ ok: false, error: e.message }, 502, headers);
+      }
+    }
+
+    const headers = corsHeaders(origin);
 
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers });
