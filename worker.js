@@ -92,6 +92,47 @@ export default {
       return json({ ok: false, error: "Method not allowed" }, 405, headers);
     }
 
+    if (url.pathname === "/schedule" || url.pathname.startsWith("/schedule/")) {
+      const headers = corsHeaders(origin, "GET, POST, DELETE, OPTIONS");
+      if (request.method === "OPTIONS") {
+        return new Response(null, { status: 204, headers });
+      }
+      if (request.method === "DELETE" && url.pathname.startsWith("/schedule/")) {
+        const id = decodeURIComponent(url.pathname.slice("/schedule/".length));
+        if (!id) return json({ ok: false, error: "Missing id" }, 400, headers);
+        await env.EVENT_HISTORY.delete(`schedule:${id}`);
+        return json({ ok: true }, 200, headers);
+      }
+      if (request.method === "GET" && url.pathname === "/schedule") {
+        const list = await env.EVENT_HISTORY.list({ prefix: "schedule:" });
+        const entries = await Promise.all(
+          list.keys.map(k => env.EVENT_HISTORY.get(k.name, { type: "json" }))
+        );
+        const pending = entries.filter(e => e && e.status === "pending")
+          .sort((a, b) => new Date(a.scheduledFor) - new Date(b.scheduledFor));
+        return json(pending, 200, headers);
+      }
+      if (request.method === "POST" && url.pathname === "/schedule") {
+        let payload;
+        try { payload = await request.json(); } catch {
+          return json({ ok: false, error: "Invalid JSON" }, 400, headers);
+        }
+        const { venueName, embed, channels, scheduledFor, eventName, eventDate } = payload || {};
+        if (!venueName || !embed || !scheduledFor) {
+          return json({ ok: false, error: "venueName, embed, and scheduledFor required" }, 400, headers);
+        }
+        const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
+        const entry = {
+          id, venueName, embed, channels, scheduledFor, eventName, eventDate,
+          status: "pending",
+          createdAt: new Date().toISOString(),
+        };
+        await env.EVENT_HISTORY.put(`schedule:${id}`, JSON.stringify(entry));
+        return json({ ok: true, id }, 200, headers);
+      }
+      return json({ ok: false, error: "Method not allowed" }, 405, headers);
+    }
+
     if (url.pathname === "/calendar") {
       const headers = corsHeaders(origin, "GET, OPTIONS");
       if (request.method === "OPTIONS") {
@@ -158,5 +199,45 @@ export default {
     const allOk = results.every(r => r.ok);
 
     return json({ ok: allOk, results }, 200, headers);
+  },
+
+  async scheduled(event, env, ctx) {
+    const now = new Date();
+    const list = await env.EVENT_HISTORY.list({ prefix: "schedule:" });
+    const entries = await Promise.all(
+      list.keys.map(k => env.EVENT_HISTORY.get(k.name, { type: "json" }))
+    );
+
+    for (const entry of entries) {
+      if (!entry) continue;
+
+      if (entry.status === "sent" && entry.sentAt) {
+        if (now - new Date(entry.sentAt) > 7 * 24 * 60 * 60 * 1000) {
+          await env.EVENT_HISTORY.delete(`schedule:${entry.id}`);
+        }
+        continue;
+      }
+
+      if (entry.status !== "pending") continue;
+      if (new Date(entry.scheduledFor) > now) continue;
+
+      const envKey = VENUE_WEBHOOK_ENV[entry.venueName];
+      const venueWebhookUrl = envKey ? env[envKey] : undefined;
+      const body = JSON.stringify({ embeds: [entry.embed] });
+
+      const wantVenue = entry.channels?.venue !== false;
+      const wantGeneral = entry.channels?.general !== false;
+
+      const tasks = [];
+      if (wantVenue && venueWebhookUrl) tasks.push(postToDiscord(entry.venueName, venueWebhookUrl, body));
+      if (wantGeneral) tasks.push(postToDiscord("General Channel", env.WEBHOOK_GENERAL, body));
+
+      const results = await Promise.all(tasks);
+
+      entry.status = "sent";
+      entry.sentAt = now.toISOString();
+      entry.results = results;
+      await env.EVENT_HISTORY.put(`schedule:${entry.id}`, JSON.stringify(entry));
+    }
   },
 };
