@@ -933,7 +933,24 @@ async function schedulePost() {
       btn.classList.add('done');
       document.getElementById('schedStatus').innerHTML =
         '<div class="status-item s-ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Scheduled for ' + esc(fmtTs(scheduledFor)) + '</div>';
+      const history = await getHistory();
+      const existing = history.find(e =>
+        e.venueName.toLowerCase() === d.venue.name.toLowerCase() &&
+        e.eventName === d.eventName &&
+        e.date === d.date
+      );
+      if (existing) {
+        existing.startTime   = d.startTime;
+        existing.endTime     = d.endTime;
+        existing.description = d.description;
+        existing.specials    = d.specials;
+        existing.posterUrl   = d.posterUrl;
+        await persistEntry(existing);
+      } else {
+        await persistEntry(makeEntry(d, 'saved'));
+      }
       await renderScheduled();
+      await renderHistory();
     } else {
       btn.textContent = 'Retry';
       btn.disabled = false;
