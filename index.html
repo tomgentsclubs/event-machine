@@ -524,7 +524,7 @@ const WORKER_URL = "https://event-machine-proxy.thailandfordy.workers.dev";
 let posted = false;
 
 // ── INIT ──────────────────────────────────────────────────────
-function init() {
+async function init() {
   const sel = document.getElementById('venueSelect');
   VENUES.forEach((v, i) => {
     const o = document.createElement('option');
@@ -540,7 +540,7 @@ function init() {
   });
   document.getElementById('posterUrl').addEventListener('input', () => { fixDropbox(); onChange(); });
   document.getElementById('venueSelect').addEventListener('change', onVenue);
-  renderHistory();
+  await renderHistory();
   renderVenueQuickTools();
 }
 
@@ -694,24 +694,24 @@ function renderPreview(d) {
 }
 
 // ── SAVE / PUBLISH ────────────────────────────────────────────
-function saveForLater() {
+async function saveForLater() {
   const d = getForm();
   if (!d.venue || !d.eventName) return;
   const entry = makeEntry(d, 'saved');
-  persistEntry(entry);
+  await persistEntry(entry);
   posted = true;
   document.getElementById('saveLabel').textContent = 'Saved';
   document.getElementById('saveBtn').classList.add('done');
   document.getElementById('saveBtn').disabled    = true;
   document.getElementById('publishBtn').disabled = true;
-  renderHistory();
+  await renderHistory();
 }
 
 async function publishNow(histId) {
   const fromHistory = histId !== undefined;
   let d, entry;
   if (fromHistory) {
-    entry = getHistory().find(e => e.id === histId);
+    entry = (await getHistory()).find(e => e.id === histId);
     if (!entry) return;
     d = entryToForm(entry);
   } else {
@@ -742,13 +742,13 @@ async function publishNow(histId) {
     entry.status     = 'published';
     entry.postCount  = (entry.postCount || 0) + 1;
     entry.lastPosted = new Date().toISOString();
-    persistEntry(entry);
+    await persistEntry(entry);
     if (!fromHistory) {
       posted = true;
       if (pubLbl) pubLbl.textContent = 'Published';
       if (pubBtn) pubBtn.classList.add('done');
     }
-    renderHistory();
+    await renderHistory();
   } else {
     if (pubBtn) { pubBtn.disabled = false; if (!pubLbl) pubBtn.textContent = 'Publish Again'; }
     if (pubLbl) pubLbl.textContent = 'Retry';
@@ -926,16 +926,30 @@ function importEvent(idx) {
   document.getElementById('publishBtn').classList.remove('done');
   document.getElementById('postStatus').innerHTML = '';
 
+  if (document.getElementById('venueSelect').value === '' && ev.venue) {
+    const evVenue = ev.venue.toLowerCase();
+    const matchIdx = VENUES.findIndex(v => v.name.toLowerCase() === evVenue);
+    if (matchIdx >= 0) {
+      document.getElementById('venueSelect').value = matchIdx;
+      onVenue();
+    }
+  }
+
   document.getElementById('importedBadge').style.display = '';
   closeCalModal();
   onChange();
 }
 
 // ── HISTORY ───────────────────────────────────────────────────
-const HISTORY_KEY = 'em_history';
-
-function getHistory() {
-  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
+async function getHistory() {
+  try {
+    const r = await fetch(WORKER_URL + '/history');
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  } catch (e) {
+    console.error('getHistory error:', e);
+    return [];
+  }
 }
 
 function makeEntry(d, status) {
@@ -970,18 +984,23 @@ function entryToForm(e) {
   };
 }
 
-function persistEntry(entry) {
-  const all = getHistory().filter(e => e.id !== entry.id);
+async function persistEntry(entry) {
   entry.savedAt = new Date().toISOString();
-  // Keep venueIdx in sync with current array order so lookups stay accurate
   const currentIdx = VENUES.findIndex(v => v.name.toLowerCase() === (entry.venueName || '').toLowerCase());
   if (currentIdx >= 0) entry.venueIdx = currentIdx;
-  all.unshift(entry);
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(all));
+  try {
+    await fetch(WORKER_URL + '/history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry),
+    });
+  } catch (e) {
+    console.error('persistEntry error:', e);
+  }
 }
 
-function loadFromHistory(id) {
-  const entry = getHistory().find(e => e.id === id);
+async function loadFromHistory(id) {
+  const entry = (await getHistory()).find(e => e.id === id);
   if (!entry) return;
   const vi = VENUES.findIndex(v => v.name.toLowerCase() === (entry.venueName || '').toLowerCase());
   const resolvedIdx = vi >= 0 ? vi : entry.venueIdx;
@@ -999,10 +1018,14 @@ function loadFromHistory(id) {
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
-function deleteFromHistory(id) {
+async function deleteFromHistory(id) {
   if (!confirm('Delete this event from history?')) return;
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(getHistory().filter(e => e.id !== id)));
-  renderHistory();
+  try {
+    await fetch(WORKER_URL + '/history/' + encodeURIComponent(id), { method: 'DELETE' });
+  } catch (e) {
+    console.error('deleteFromHistory error:', e);
+  }
+  await renderHistory();
 }
 
 function fmtTs(iso) {
@@ -1018,14 +1041,14 @@ function venueSlug(name) {
 
 let showPastEvents = false;
 
-function togglePastEvents() {
+async function togglePastEvents() {
   showPastEvents = !showPastEvents;
   document.getElementById('pastToggle').textContent = showPastEvents ? 'Hide Past Events' : 'View Past Events';
-  renderHistory();
+  await renderHistory();
 }
 
-function renderHistory() {
-  const all = getHistory();
+async function renderHistory() {
+  const all = await getHistory();
   const today = new Date(); today.setHours(0,0,0,0);
   const upcoming = all.filter(e => !e.date || new Date(e.date) >= today);
   const past     = all.filter(e =>  e.date && new Date(e.date) <  today);

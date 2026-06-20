@@ -57,6 +57,41 @@ export default {
     const origin = request.headers.get("Origin") || "";
     const url = new URL(request.url);
 
+    if (url.pathname === "/history" || url.pathname.startsWith("/history/")) {
+      const headers = corsHeaders(origin, "GET, POST, DELETE, OPTIONS");
+      if (request.method === "OPTIONS") {
+        return new Response(null, { status: 204, headers });
+      }
+      if (request.method === "DELETE" && url.pathname.startsWith("/history/")) {
+        const id = decodeURIComponent(url.pathname.slice("/history/".length));
+        if (!id) return json({ ok: false, error: "Missing id" }, 400, headers);
+        await env.EVENT_HISTORY.delete(`history:${id}`);
+        return json({ ok: true }, 200, headers);
+      }
+      if (request.method === "GET" && url.pathname === "/history") {
+        const list = await env.EVENT_HISTORY.list({ prefix: "history:" });
+        const entries = await Promise.all(
+          list.keys.map(k => env.EVENT_HISTORY.get(k.name, { type: "json" }))
+        );
+        const sorted = entries.filter(Boolean).sort((a, b) =>
+          new Date(b.savedAt) - new Date(a.savedAt)
+        );
+        return json(sorted, 200, headers);
+      }
+      if (request.method === "POST" && url.pathname === "/history") {
+        let entry;
+        try { entry = await request.json(); } catch {
+          return json({ ok: false, error: "Invalid JSON" }, 400, headers);
+        }
+        if (!entry || !entry.id) {
+          return json({ ok: false, error: "Entry with id required" }, 400, headers);
+        }
+        await env.EVENT_HISTORY.put(`history:${entry.id}`, JSON.stringify(entry));
+        return json({ ok: true }, 200, headers);
+      }
+      return json({ ok: false, error: "Method not allowed" }, 405, headers);
+    }
+
     if (url.pathname === "/calendar") {
       const headers = corsHeaders(origin, "GET, OPTIONS");
       if (request.method === "OPTIONS") {
