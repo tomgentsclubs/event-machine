@@ -574,6 +574,7 @@ const VENUES = [
 const WORKER_URL = "https://event-machine-proxy.thailandfordy.workers.dev";
 
 let posted = false;
+let currentHistoryId = null;
 
 // ── INIT ──────────────────────────────────────────────────────
 async function init() {
@@ -595,6 +596,7 @@ async function init() {
   await renderHistory();
   await renderScheduled();
   renderVenueQuickTools();
+  setInterval(() => { renderHistory(); renderScheduled(); }, 10000);
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
@@ -646,6 +648,7 @@ function clearForm() {
   document.getElementById('schedArrow').disabled = true;
   document.getElementById('schedPanel').classList.add('hidden');
   posted = false;
+  currentHistoryId = null;
   setAccent('#3a3a3a');
   document.body.classList.remove('live');
   renderPreview({});
@@ -685,6 +688,7 @@ function onVenue() {
     document.getElementById('endTime').value   = parseTime(parts[1]);
   }
   posted = false;
+  currentHistoryId = null;
   document.getElementById('postStatus').innerHTML = '';
   document.getElementById('saveLabel').textContent = 'Save for Later';
   document.getElementById('publishLabel').textContent = 'Publish Now';
@@ -753,8 +757,7 @@ function renderPreview(d) {
 async function saveForLater() {
   const d = getForm();
   if (!d.venue || !d.eventName) return;
-  const entry = makeEntry(d, 'saved');
-  await persistEntry(entry);
+  await ensureHistoryEntry(d);
   posted = true;
   document.getElementById('saveLabel').textContent = 'Saved';
   document.getElementById('saveBtn').classList.add('done');
@@ -929,26 +932,14 @@ async function schedulePost() {
     });
     const data = await r.json();
     if (data.ok) {
-      btn.textContent = 'Scheduled';
-      btn.classList.add('done');
       document.getElementById('schedStatus').innerHTML =
         '<div class="status-item s-ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>Scheduled for ' + esc(fmtTs(scheduledFor)) + '</div>';
-      const history = await getHistory();
-      const existing = history.find(e =>
-        e.venueName.toLowerCase() === d.venue.name.toLowerCase() &&
-        e.eventName === d.eventName &&
-        e.date === d.date
-      );
-      if (existing) {
-        existing.startTime   = d.startTime;
-        existing.endTime     = d.endTime;
-        existing.description = d.description;
-        existing.specials    = d.specials;
-        existing.posterUrl   = d.posterUrl;
-        await persistEntry(existing);
-      } else {
-        await persistEntry(makeEntry(d, 'saved'));
-      }
+      btn.textContent = 'Schedule Post';
+      btn.disabled = false;
+      btn.classList.remove('done');
+      document.getElementById('schedDate').value = '';
+      document.getElementById('schedTime').value = '';
+      await ensureHistoryEntry(d);
       await renderScheduled();
       await renderHistory();
     } else {
@@ -1110,6 +1101,7 @@ function importEvent(idx) {
 
   // Reset post state for new data
   posted = false;
+  currentHistoryId = null;
   document.getElementById('saveLabel').textContent    = 'Save for Later';
   document.getElementById('publishLabel').textContent = 'Publish Now';
   document.getElementById('saveBtn').classList.remove('done');
@@ -1189,9 +1181,33 @@ async function persistEntry(entry) {
   }
 }
 
+async function ensureHistoryEntry(d) {
+  const history = await getHistory();
+  let entry = currentHistoryId
+    ? history.find(e => e.id === currentHistoryId)
+    : history.find(e =>
+        e.venueName.toLowerCase() === d.venue.name.toLowerCase() &&
+        e.eventName === d.eventName &&
+        e.date === d.date
+      );
+  if (entry) {
+    entry.startTime   = d.startTime;
+    entry.endTime     = d.endTime;
+    entry.description = d.description;
+    entry.specials    = d.specials;
+    entry.posterUrl   = d.posterUrl;
+  } else {
+    entry = makeEntry(d, 'saved');
+  }
+  currentHistoryId = entry.id;
+  await persistEntry(entry);
+  return entry;
+}
+
 async function loadFromHistory(id) {
   const entry = (await getHistory()).find(e => e.id === id);
   if (!entry) return;
+  currentHistoryId = entry.id;
   const vi = VENUES.findIndex(v => v.name.toLowerCase() === (entry.venueName || '').toLowerCase());
   const resolvedIdx = vi >= 0 ? vi : entry.venueIdx;
   document.getElementById('venueSelect').value   = resolvedIdx >= 0 ? resolvedIdx : '';
