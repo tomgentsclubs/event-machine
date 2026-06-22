@@ -596,7 +596,15 @@ async function init() {
   await renderHistory();
   await renderScheduled();
   renderVenueQuickTools();
-  setInterval(() => { renderHistory(); renderScheduled(); }, 10000);
+  let pollTimer = setInterval(() => { renderHistory(); renderScheduled(); }, 10000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      renderHistory(); renderScheduled();
+      if (!pollTimer) pollTimer = setInterval(() => { renderHistory(); renderScheduled(); }, 10000);
+    } else {
+      clearInterval(pollTimer); pollTimer = null;
+    }
+  });
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
